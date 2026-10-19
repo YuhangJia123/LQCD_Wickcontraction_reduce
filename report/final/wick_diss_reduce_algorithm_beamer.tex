@@ -1,0 +1,752 @@
+% !TEX program = xelatex
+\documentclass[aspectratio=169,UTF8,fontset=fandol]{ctexbeamer}
+\setCJKmainfont[
+  CMap=Identity-H,
+  Path=/System/Library/Fonts/Supplemental/,
+  Extension=.ttc,
+  FontIndex=0
+]{Songti.ttc}
+\setCJKsansfont[
+  CMap=Identity-H,
+  Path=/System/Library/Fonts/Supplemental/,
+  Extension=.ttc,
+  FontIndex=0
+]{Songti.ttc}
+\setCJKmonofont[
+  CMap=Identity-H,
+  Path=/System/Library/Fonts/Supplemental/,
+  Extension=.ttc,
+  FontIndex=0
+]{Songti.ttc}
+\usepackage{amsmath,amssymb,mathtools,booktabs,array,tikz,hyperref}
+\usetikzlibrary{arrows.meta,positioning}
+\definecolor{Ink}{HTML}{1C2D35}
+\definecolor{Teal}{HTML}{187C78}
+\definecolor{Coral}{HTML}{D86E4B}
+\definecolor{Mist}{HTML}{EEF4F2}
+\definecolor{Muted}{HTML}{5F7078}
+\usetheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{normal text}{fg=Ink,bg=white}
+\setbeamercolor{frametitle}{fg=Ink,bg=white}
+\setbeamercolor{structure}{fg=Teal}
+\setbeamercolor{block title}{fg=white,bg=Teal}
+\setbeamercolor{block body}{fg=Ink,bg=Mist}
+\setbeamertemplate{frametitle}{\vspace{0.25em}\insertframetitle\par\vspace{-0.3em}\color{Teal}\rule{\linewidth}{0.6pt}}
+\setbeamertemplate{footline}{\leavevmode\hbox{\begin{beamercolorbox}[wd=.78\paperwidth,ht=2.6ex,dp=1.1ex,leftskip=1em]{author in head/foot}\color{Muted}\scriptsize LQCD Wick 约化\end{beamercolorbox}\begin{beamercolorbox}[wd=.22\paperwidth,ht=2.6ex,dp=1.1ex,rightskip=1em plus1fil]{date in head/foot}\color{Muted}\scriptsize\insertframenumber/\inserttotalframenumber\end{beamercolorbox}}\vskip0.25ex\hbox{\color{Teal}\rule{\paperwidth}{1.1pt}}}
+\setbeamersize{text margin left=0.85cm,text margin right=0.85cm}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\newcommand{\kw}[1]{\textcolor{Teal}{\textbf{#1}}}
+\newcommand{\smallnote}[1]{{\scriptsize\color{Muted}#1}}
+\title{LQCD 任意算符的 Wick 约化}
+\subtitle{统一 distillation / normal 输入、Wick 约化与结果路由}
+\author{wick\_diss\_reduce}
+\date{2026 年 10 月}
+\begin{document}
+\begin{frame}[plain]
+\vspace{0.75cm}
+{\color{Teal}\small LATTICE QCD \quad / \quad WICK REDUCTION}\par
+\vspace{0.45cm}
+{\usebeamerfont{title}\color{Ink}\inserttitle\par}
+\vspace{0.25cm}
+{\usebeamerfont{subtitle}\color{Muted}\insertsubtitle\par}
+\vspace{0.65cm}
+\begin{beamercolorbox}[sep=0.7em,wd=\linewidth]{block body}
+面向带有 VVV/VDV（normal 对应 \(\epsilon/\delta\)）、具体 Gamma 和开放裸指标的关联函数。项目统一接受两类输入（distillation、normal），先枚举味道分辨的 Wick 图，再按 incidence、合法 transporter、sink Dirac 和 source Gram 分层约化。
+\end{beamercolorbox}
+\vfill
+\smallnote{输入为有序算符对 [O1\_sink,O2\_source]；输出统一写入 result/input\_mode\_output/，保留原有 contract 表达式格式。}
+\end{frame}
+\begin{frame}{1 前人工作：PACS-CS 的 93/1107}
+\small
+\begin{beamercolorbox}[sep=0.55em,wd=\linewidth]{block body}
+\textbf{原文摘录：}\textit{``only 1107 (93) contractions are required''}。
+这里括号外为 \({}^4\mathrm{He}\)，括号内为 \({}^3\mathrm{He}\)。
+\smallnote{Yamazaki, Kuramashi and Ukawa, Phys. Rev. D 81, 111504 (2010), arXiv:0912.1383, Sec. II.}
+\end{beamercolorbox}
+\vspace{0.3em}
+\begin{columns}[T,onlytextwidth]
+\column{0.48\linewidth}
+\begin{block}{论文的筛选逻辑}
+\small
+从 \({}^3\mathrm{He}\) 的 2,880、\({}^4\mathrm{He}\) 的 518,400 个原始 Wick 配对出发，利用相同核子交换及同位旋对称性筛掉等价项，再由计算机检查剩余等价关系，得到 93 和 1107。作者还在一个规范场构型上与完整收缩数值核对。
+\end{block}
+\column{0.48\linewidth}
+\begin{block}{零动量 sink 的三夸克 block}
+\small
+每个 nucleon block 组合三条夸克传播子，并吸收核子内部两个同味夸克的交换。因此它可\textit{同时}处理 \(2^{N_N}\) 个收缩：
+\[
+{}^3\mathrm{He}: 2^3=8,\qquad {}^4\mathrm{He}: 2^4=16.
+\]
+93/1107 是论文报告的筛选后计数，不能理解成仅处理 93/1107 个单项 Wick 收缩。
+\end{block}
+\end{columns}
+\vspace{0.2em}
+\smallnote{论文原文另称 ``calculate \(2^{N_N}\) contractions simultaneously''；该批处理依赖零动量 sink block 的定义。}
+\end{frame}
+\begin{frame}{1 前人工作：nucleon block 如何减少 contract}
+\scriptsize
+\begin{columns}[T,onlytextwidth]
+\column{0.61\linewidth}
+\begin{block}{按本报告记号组合内部同味交换}
+\scriptsize
+\setlength{\jot}{1pt}
+\[
+\begin{aligned}
+B_{p,A}^{(\mathbf0)}(\xi_1,\xi_2,\xi_3)
+={}&\sum_{r,s,t,a,b}VVV_{\mathbf0}[rst]\,(C\gamma_5)_{ab}\\
+&\times\Big[P_u[r,A;\xi_1]P_u[s,a;\xi_2]\\
+&\qquad-P_u[r,A;\xi_2]P_u[s,a;\xi_1]\Big]P_d[t,b;\xi_3].
+\end{aligned}
+\]
+\(\xi_i=(j_i,\alpha_i)\) 为源蒸馏模/Dirac 复合指标；
+\(r,s,t,a,b\) 求和，\(A,\xi_1,\xi_2,\xi_3\) 开放。
+\end{block}
+\column{0.36\linewidth}
+\begin{block}{一次外层收缩包含 8/16 项}
+\scriptsize
+令 \(B_k=B_k^{(0)}+B_k^{(1)}\)，交换符号已纳入 \(B_k^{(1)}\)。共同外层收缩 \(\mathcal L\) 满足
+\[
+\begin{aligned}
+&\mathcal L(B_1,\ldots,B_{N_N})\\
+&=\sum_{\boldsymbol s\in\{0,1\}^{N_N}}
+\mathcal L(B_1^{(s_1)},\ldots,B_{N_N}^{(s_{N_N})}).
+\end{aligned}
+\]
+先组合可减少完整外层收缩；Wick 贡献保留，构造成本仍需计入。
+\end{block}
+\end{columns}
+\vspace{0.45em}
+\begin{beamercolorbox}[sep=0.45em,wd=\linewidth]{block body}
+\scriptsize
+\textbf{计算含义：}三个/四个预组合核子 block 的一次外层收缩，展开后包含 8/16 项内部配对。
+若仍逐项执行完整 \texttt{contract}，调用数不变；预组合后反复复用 block 才能避免重复构造。
+\end{beamercolorbox}
+\vspace{0.25em}
+\smallnote{Block 逻辑：PACS-CS, \href{https://arxiv.org/abs/0912.1383}{arXiv:0912.1383}, Sec. II；复用与成本转移：Humphrey 等, \href{https://arxiv.org/abs/2201.04269}{arXiv:2201.04269}, Sec. 2, Eq. (3)。}
+\end{frame}
+
+\begin{frame}{1 前人工作：方法与计数口径}
+\scriptsize
+\renewcommand{\arraystretch}{1.28}
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{6.15cm}>{\raggedright\arraybackslash}p{5.25cm}}
+\toprule
+工作 & 实现逻辑 & 论文报告的结果 / 口径\\
+\midrule
+PACS-CS\newline Yamazaki 等 & 置换和同位旋对称性筛选；零动量 sink 三夸克 block 将核子内部同味交换合在一次计算中。 & \({}^3\mathrm{He}:93\)，\({}^4\mathrm{He}:1107\) 个筛选后收缩；每个 block 同时处理 \(8/16\) 个内部排列。\\
+\addlinespace[0.35em]
+UCA\newline Doi--Endres & 统一 Wick 置换与 color/spinor 求和；预先生成非零系数的 unified index list，并合并冗余和抵消。 & 非相对论算符：\({}^3\mathrm{H}/{}^3\mathrm{He}\) 的 \(N_{\rm contr}=3240\)、加速 192 倍；\({}^4\mathrm{He}\) 为 32,400、20,736 倍。\\
+\addlinespace[0.35em]
+递归法\newline G\"unther 等 & 逐个加入重子，递归构造独立分量及非零收缩列表，避免重复形成中间张量。 & \({}^4\mathrm{He}\) 非相对论约 \(10^4\) 次操作；相对论约 \(10^8\) 次操作。\\
+\addlinespace[0.35em]
+Redstar\newline Chen 等 & Wick 项转为图；同构图规范标号后复用收缩图与中间张量，并规划共享收缩路径。 & 图分类加速 1.01--10.62 倍；缓存高水位内存降低 2.39--14.91 倍。\\
+\bottomrule
+\end{tabular}
+\vspace{0.4em}
+\begin{beamercolorbox}[sep=0.35em,wd=\linewidth]{block body}
+\scriptsize
+按 PACS-CS 论文的计数口径，本地群作用复现得到 \({}^3\mathrm{He}:93\) 和 \({}^4\mathrm{He}:1068\) 个代表块；论文报告的 \({}^4\mathrm{He}\) 数字为 1107。93/1068 的群作用、Burnside 计数和 raw 覆盖推导放在附录 A。
+\end{beamercolorbox}
+\vspace{0.15em}
+\smallnote{来源：Yamazaki 等, \href{https://arxiv.org/abs/0912.1383}{arXiv:0912.1383}；Doi--Endres, \href{https://arxiv.org/abs/1205.0585}{arXiv:1205.0585}；G\"unther 等, \href{https://arxiv.org/abs/1301.4895}{arXiv:1301.4895}；Chen 等, PASC 2023, \href{https://doi.org/10.1145/3592979.3593409}{DOI:10.1145/3592979.3593409}。}
+\end{frame}
+\begin{frame}{2 算法：为什么需要 Wick 约化}
+\begin{columns}[T,onlytextwidth]
+\column{0.32\linewidth}
+\begin{block}{蒸馏表示}
+\[
+q(x,t)\longrightarrow V(x,t)\,\widetilde q(t)
+\]
+空间自由度投影到低维蒸馏子空间；传播信息由 peram 连接。
+\end{block}
+\column{0.32\linewidth}
+\begin{block}{算符结构}
+重子使用 VVV（normal 为 \(\epsilon\)），介子使用 VDV（normal 为 \(\delta\)）；每条传播线还携带方向、味道、裸/哑指标和 Gamma 端点。
+\end{block}
+\column{0.32\linewidth}
+\begin{block}{约化目标}
+多 Wick 图可能只差指标命名、VVV 腿置换、Gamma 绑定或 source 线性关系。需要保留精确系数而减少重复 contract。
+\end{block}
+\end{columns}
+\vspace{0.45em}
+\begin{beamercolorbox}[sep=0.55em,wd=\linewidth]{block body}
+\kw{核心原则：}具体指标名字不冻结；sink/source 边界、裸/哑角色、味道类别和 Gamma 绑定不能被偷偷交换。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}{2 算法：输入为任意可收缩的算符对}
+\[
+[O_1,O_2]=[O_{\rm sink},O_{\rm source}]
+\]
+\begin{columns}[T,onlytextwidth]
+\column{0.48\linewidth}
+\begin{block}{重子例子}
+\[
+p_{\rm sink}=VVV(p_1)\,u[u\,C\gamma_5\,d]\,u
+\]
+\[
+n_{\rm sink}=VVV(p_2)\,d[d\,C\gamma_5\,u]\,d
+\]
+每个场、VVV（normal 为 \(\epsilon\)）和 Gamma 获得独立槽位。
+\end{block}
+\column{0.48\linewidth}
+\begin{block}{介子例子}
+\[
+\pi^+_{\rm sink}=VDV(\mathbf p)\,\bar d\,\gamma_5\,u
+\]
+source 的场顺序由输入显式给出，不自动反排。
+\end{block}
+\end{columns}
+\vspace{0.35em}
+\smallnote{Gamma 输入为具体 $4\times4$ 矩阵；VVV/VDV 的动量用 external\_tag 标识。输入顶层声明 input=distillation 或 normal；后续 mode 决定 Wick / special 路径。}
+\end{frame}
+\begin{frame}{2 算法：整体流程}
+\centering
+\begin{tikzpicture}[
+>=Latex,
+flowbox/.style={draw=Teal,rounded corners=2pt,very thick,fill=Mist,
+minimum width=2.05cm,minimum height=1.18cm,text width=1.92cm,
+align=center,font=\scriptsize},
+arrow/.style={-{Latex[length=2mm]},draw=Teal,line width=1.2pt}
+]
+\node[flowbox] (a) {1. 枚举\\Wick 图};
+\node[flowbox,right=0.10cm of a] (b) {2. peram\\分类};
+\node[flowbox,right=0.10cm of b] (c) {3. peram\\规范化};
+\node[flowbox,right=0.10cm of c] (d) {4. sink\\VVV/VDV、Gamma};
+\node[flowbox,right=0.10cm of d] (e) {5. source\\incidence、Gram/\\斯密特正交化};
+\node[flowbox,right=0.10cm of e] (f) {6. basis、系数\\及裸轴转置};
+\foreach \x/\y in {a/b,b/c,c/d,d/e,e/f}
+\draw[arrow] (\x.east)--(\y.west);
+\end{tikzpicture}
+\vspace{0.65cm}
+\[
+\boxed{\text{只在前一层通过后进入下一层；不匹配就停止后续比较}}
+\]
+\smallnote{Wick 味道在枚举时严格区分；默认同位旋模式只在后续 peram 等价判定中让 u/d 共用数值类别。}
+\end{frame}
+\begin{frame}{2 算法：Wick 枚举与 peram 分类：ppn 例}
+\small
+\begin{columns}[T,onlytextwidth]
+\column{0.48\linewidth}
+\begin{block}{精确味道配对}
+ppn 的 sink 槽位为 \(p_1=(u,u,d)\)、\(p_2=(u,u,d)\)、\(n=(d,d,u)\)。source 槽位按输入为 \(\bar p_1=(u,d,u)\)、\(\bar p_2=(u,d,u)\)、\(\bar n=(d,u,d)\)。枚举时只允许同味道夸克与反夸克配对；u/d 仍是不同 Wick 味道。
+\end{block}
+\column{0.48\linewidth}
+\begin{block}{peram 候选类}
+例如 \(u[u,A]\to\bar u[i,D]\) 生成 \(P_u[u,A;i,D]\)，其中 \(P_f\equiv\mathrm{peram\_f\_sin\_sou}\)。按 flavor class、sin/sou、裸/哑角色和端点连接分桶。默认同位旋模式下，后续 peram 类把 \(P_d\) 与 \(P_u\) 视作同类。
+\end{block}
+\end{columns}
+\vspace{0.15em}
+\begin{beamercolorbox}[sep=0.2em,wd=\linewidth]{block body}
+\scriptsize
+取一张 ppn Wick 图 \(W_0\)，以下列出它的完整指标。VVV 的三个腿指标和 Gamma 的哑 Dirac 指标在图内求和；\(A,B,C,D,E,F\) 是开放裸指标，输出轴按 \(ABCDEF\) 排列。
+{\setlength{\jot}{1pt}
+\[
+\begin{aligned}
+W_0={}&\sigma_0\,
+VVV_{\rm sink}[uvw]VVV_{\rm sink}[xyz]VVV_{\rm sink}[rst]\\
+&\quad\mathrm{conj\_VVV}_{\rm source}[ijk]\mathrm{conj\_VVV}_{\rm source}[lmn]\mathrm{conj\_VVV}_{\rm source}[opq]\\
+&\cdot C_{g5}[ab]C_{g5}[cd]C_{g5}[ef]
+ C_{g5}^{\dagger}[\alpha\beta]C_{g5}^{\dagger}[\gamma\delta]C_{g5}^{\dagger}[\epsilon\zeta]\\
+&\cdot P_u[u,A;i,D]P_u[v,a;k,\beta]P_u[w,b;j,\alpha]\\
+&\cdot P_u[x,B;l,E]P_u[y,c;n,\delta]P_u[z,d;m,\gamma]\\
+&\cdot P_u[r,C;o,F]P_u[s,e;q,\zeta]P_u[t,f;p,\epsilon]\;\longrightarrow\;ABCDEF .
+\end{aligned}
+\]
+}
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}{2 算法：Peram 规范化与裸轴换位}
+\small
+\begin{columns}[T,onlytextwidth]
+\column{0.48\linewidth}
+\begin{block}{固定基准 \(W_0\)}
+\scriptsize
+\[
+\begin{array}{l}
+\mathtt{uAiD,\ vBjE,\ wakF,}\\
+\mathtt{xCld,\ ybme,\ zcnf\;---\;ABCDEF}
+\end{array}
+\]
+\end{block}
+\column{0.48\linewidth}
+\begin{block}{待规范化 \(W_1\)}
+\scriptsize
+\[
+\begin{array}{l}
+\mathtt{uAjE,\ vBiD,\ wakF,}\\
+\mathtt{xCld,\ ybme,\ zcnf\;---\;ABCDEF}
+\end{array}
+\]
+\end{block}
+\end{columns}
+\vspace{0.15em}
+\begin{center}
+\(i\leftrightarrow j\)（源端 VVV 哑指标重命名），\qquad
+\(D\leftrightarrow E\)（源端裸轴置换）
+\end{center}
+\[
+\begin{aligned}
+W_1&\longrightarrow uAiD,\ vBjE,\ wakF,\ xCld,\ ybme,\ zcnf\;---\;ABCEDF,\\
+W_1[A,B,C,D,E,F]&=W_0[A,B,C,E,D,F]
+=W_0.\mathrm{transpose}(0,1,2,4,3,5).
+\end{aligned}
+\]
+\smallnote{固定基准不变；规范候选时把 peram 左侧对齐。置换 tuple 从 canonical basis 轴序指定 candidate 输出轴序，直接用于 \texttt{basis\_contract.transpose(*permutation)}。}
+\end{frame}
+\begin{frame}{2 算法：Sink 结构筛选在 Dirac 之前}
+\small
+\begin{columns}[T,onlytextwidth]
+\column{0.24\linewidth}
+\begin{block}{1. 固定基准}
+\scriptsize
+peram 分类和规范化通过后，固定首个 Wick 的 sink VVV/VDV、动量标签和 Gamma 绑定。
+\end{block}
+\column{0.24\linewidth}
+\begin{block}{2. 结构筛选}
+\scriptsize
+先核对算符类型、动量和有序腿连接；只为结构兼容者生成 transporter 候选。
+\end{block}
+\column{0.24\linewidth}
+\begin{block}{3. 同步映射}
+\scriptsize
+腿置换必须同时作用于 sink peram 半边和对应 Gamma 槽位；味道类和动量不匹配即丢弃。
+\end{block}
+\column{0.24\linewidth}
+\begin{block}{4. Dirac 检验}
+\scriptsize
+候选 payload 去重并找独立方向，再检查基准投影残差。内积全为零可提前判无解；非零内积本身不够。
+\end{block}
+\end{columns}
+\vspace{0.25em}
+\begin{beamercolorbox}[sep=0.45em,wd=\linewidth]{block body}
+\scriptsize
+ppn 例：基准 \(VVV_s[uvw]\,VVV_s[xyz]\)，\(\Gamma_s=(g_a[ab],g_b[cd])\)。交换第一组前两腿得到候选 \([vuw][xyz]\) 时，\(g_a\) 绑定的槽位随之变为 \([ba]\)，对应 peram 腿也一起移动；动量标签不同则在 Dirac 计算前排除。\(g_a=g_b\) 也不代表候选自动通过。
+\end{beamercolorbox}
+\vspace{0.1em}
+\smallnote{Sink 通过后，才对 source incidence 和 source Dirac 做 Gram/斯密特正交化；完整恢复关系仍需记录 transporter、source 重命名、裸轴置换和系数。}
+\end{frame}
+\begin{frame}{2 算法：指标对称性以及冗余对称性}
+\scriptsize
+取两条同类型的 \(P_u\)，将它们的 sink/source 完整指标组同步互换；相关 VVV 和 Gamma 中的同名指标也一起重命名：
+\[
+\boxed{(v,a;k,\beta)\;\longleftrightarrow\;(y,c;n,\delta)}
+\]
+\begin{beamercolorbox}[sep=0.35em,wd=\linewidth]{block body}
+\[
+\begin{aligned}
+&P_u[v,a;k,\beta]P_u[y,c;n,\delta]\\[-0.15em]
+&\qquad\longmapsto P_u[y,c;n,\delta]P_u[v,a;k,\beta].
+\end{aligned}
+\]
+两条 peram 个体互换，但乘积及 peram 多重集不变。sink 一般随之变化：
+\[
+\begin{aligned}
+&VVV_s[uvw]VVV_s[xyz]g[ab]g[cd]\\[-0.15em]
+&\qquad\longmapsto VVV_s[uyw]VVV_s[xvz]g[cb]g[ad].
+\end{aligned}
+\]
+\end{beamercolorbox}
+\vspace{0.25em}
+\textbf{规范 sink 与剩余对称性：}保持 peram 集合的指标重命名一般会使 sink 不等价，因此先规范并检验 sink，排除不匹配的映射。规范化后仍保持 peram 集合和 sink 张量不变的整体重命名，称为\kw{剩余指标对称性}，即这一层的冗余；source 仍须继续检验。
+\vspace{0.3em}
+\begin{beamercolorbox}[sep=0.4em,wd=\linewidth]{block body}
+\textbf{本项目如何处理：}先按 flavor、方向、动量/坐标和 peram incidence 搜索合法 transporter；用具体 sink Dirac 张量匹配参考，吸收比例系数，并保留费米符号和开放轴 transpose。对剩余映射产生的 source 表示去重，再做 incidence 检查和 Gram/正交化；零残差时合并到已有 basis，从而去除剩余冗余。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}[t]{2 算法：Source incidence 与线性独立性}
+\fontsize{7.3}{8.6}\selectfont
+\setbeamerfont{block title}{size=\fontsize{9}{10.5}\selectfont}
+\setlength{\abovedisplayskip}{2pt}
+\setlength{\belowdisplayskip}{2pt}
+\begin{beamercolorbox}[sep=0.4em,wd=\linewidth]{block body}
+\textbf{内积是矩阵比较在 Dirac 直积空间中的高维推广：}用它检验 Gamma 张量是否相同、成比例或线性相关。以 \(C\gamma_5\) 为例，
+\[
+A_{ab}=(C\gamma_5)_{ab},\quad B_{ab}=(C\gamma_5)_{ba},\quad
+\langle A,B\rangle_D=\tfrac14\textstyle\sum_{a,b=0}^{3}A_{ab}^{*}B_{ab}
+=\frac14\operatorname{tr}(A^\dagger B).
+\]
+实测 \(\operatorname{tr}(A^\dagger A)=4\)、\(\operatorname{tr}(A^\dagger B)=-4\)，故 \(1/4\) 使 \(\|A\|_D^2=\|B\|_D^2=1\)；\(\rho=\langle A,B\rangle_D/\|A\|_D^2=-1\)、\(\|B-\rho A\|_D^2=0\)，得到 \(B=-A\)。欧式 Gamma 正交性为
+\[
+\tfrac14\operatorname{tr}(\gamma_\mu^\dagger\gamma_\nu)=\delta_{\mu\nu},\qquad
+\tfrac14\operatorname{tr}(\Gamma_I^\dagger\Gamma_J)=\delta_{IJ}.
+\]
+\(\Gamma_I\in\{I,\gamma_5,\gamma_\mu,\gamma_5\gamma_\mu,\sigma_{\mu\nu}\ (\mu<\nu)\}\)，\(\sigma_{\mu\nu}=\tfrac12[\gamma_\mu,\gamma_\nu]\)，共 16 个正交基。\(\gamma_5\sigma_{\mu\nu}\) 也有单位迹范数，但与 \(\sigma_{\rho\sigma}\) 对偶，不新增独立方向。
+\end{beamercolorbox}
+\vspace{0.15em}
+\(n\) 个 Dirac 因子可用 \(\langle T,U\rangle_D=4^{-n}\operatorname{tr}(T^\dagger U)\)；固定归一化因子不改变线性相关判定。
+\begin{columns}[T,onlytextwidth]
+\column{0.31\linewidth}
+\begin{block}{source VVV/VDV}
+\fontsize{7.3}{8.6}\selectfont
+在允许的结构类内比较 source Dirac；不因数值偶然相等而跨图合并。
+\end{block}
+\column{0.31\linewidth}
+\begin{block}{Gram 内积}
+\fontsize{7.3}{8.6}\selectfont
+\(G_{ij}=\langle D_i,D_j\rangle\)。投影残差为零时，将候选并入已有 basis。
+\end{block}
+\column{0.31\linewidth}
+\begin{block}{Gram--Schmidt}
+\fontsize{7.3}{8.6}\selectfont
+流式正交化只保存基和系数；非零残差产生新的独立方向。
+\end{block}
+\end{columns}
+\vspace{0.2em}
+\begin{beamercolorbox}[sep=0.4em,wd=\linewidth]{block body}
+\fontsize{7.3}{8.6}\selectfont
+规范 sink 后仍保持 peram 集合和 sink 张量不变的置换，就是\kw{剩余指标对称性}。
+\par\smallskip
+本项目先对此类 source 表示去重，再用内积/Gram 检出同一结构类内由 Fierz 重排导致的线性相关。对正交归一基 \(q_i\)，检验 \(r=x-\sum_i\langle q_i,x\rangle q_i\)；零残差时合并 basis 和系数。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}{3.1 功能总览：input、mode 与 output}
+\small
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.22}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{p{2.4cm}p{4.6cm}p{4.6cm}}
+\toprule
+输入 input & \texttt{wick} & \texttt{special}\\
+\midrule
+\texttt{distillation} & independent / check & --\\
+\texttt{normal} & independent / check / block & independent / check / count\\
+\bottomrule
+\end{tabular}
+\end{table}
+\vspace{0.25em}
+\begin{columns}[T,onlytextwidth]
+\column{0.47\linewidth}
+\begin{block}{两类 input 的区别}
+\scriptsize
+\texttt{distillation} 将动量/坐标标签放在 VVV/VDV 局部张量上，peram 使用蒸馏端点。
+\par\smallskip
+\texttt{normal} 将动量/坐标端点信息放在 peram 上，局部颜色张量使用 \(\delta/\epsilon\)。
+\par\smallskip
+任意动量（坐标）、任意味道的介子--重子混合都可以输入。
+\end{block}
+\column{0.47\linewidth}
+\begin{block}{模式与限制}
+\scriptsize
+\texttt{wick} 保留逐 Wick 收缩和开放轴关系。
+\par\smallskip
+\texttt{special} 输出具体颜色--Dirac 指标的结果，只对 normal 开启。
+\par\smallskip
+\texttt{block} 只用于 normal-wick；\texttt{count} 只用于 normal-special。
+\end{block}
+\end{columns}
+\vspace{0.2em}
+\begin{beamercolorbox}[sep=0.42em,wd=\linewidth]{block body}
+\scriptsize
+合法组合由表格给出；所有结果写入 \texttt{result/\{input\}\_\{mode\}\_\{output\}/} 并保留原项目文件格式。normal-special 还可选择 \texttt{complete}（允许局部因子内部的全部 Wick 边）或 \texttt{cross\_time}（只保留 sink--source 跨时间边）。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}[fragile]{3.1 输出格式：Wick 与 special}
+\scriptsize
+\begin{columns}[T,onlytextwidth]
+\column{0.49\linewidth}
+\begin{block}{Wick：Python 三表}
+\fontsize{7.2}{8.7}\selectfont
+\texttt{delta} 实际输出节选；\texttt{...} 仅省略 contract 参数。
+\begin{verbatim}
+delta_basis_contract = {}
+delta_basis_contract[1] = contract(...)
+delta_basis_contract[3] = contract(...)
+
+delta_basis = {}
+delta_basis[0] = delta_basis_contract[1]
+delta_basis[1] = -delta_basis_contract[3]
+
+delta_coefficients = [2, 4]
+\end{verbatim}
+\texttt{basis\_contract} 保存独立收缩；\texttt{basis} 保存带符号、必要时转置的视图；\texttt{coefficients[i]} 乘同下标 \texttt{basis[i]} 后求和。
+\end{block}
+\column{0.49\linewidth}
+\begin{block}{Special：具体颜色--Dirac 坐标与系数}
+\fontsize{7.2}{8.7}\selectfont
+JSON v3 的 \texttt{records} 中，\texttt{type="basis"} 记录包含 \texttt{terms}；一个实际项的字段为：
+\begin{verbatim}
+"open_indices": []
+"peram_elements": [...]
+"coefficient": [1.0, 0.0]
+\end{verbatim}
+\texttt{peram\_elements} 的两条传播子坐标：\par
+\vspace{0.4em}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lll}
+\toprule
+flavor & quark: point, c, s & antiquark: point, c, s\\
+\midrule
+ud & sink, 0, 0 & source, 0, 0\\
+ud & source, 0, 2 & sink, 0, 2\\
+\bottomrule
+\end{tabular}
+\par\vspace{0.4em}
+\texttt{open\_indices} 是开放指标，系数按 [实部, 虚部] 保存；\(c=\text{color}\in\{0,1,2\}\)，\(s=\text{spin}\in\{0,1,2,3\}\)。
+\end{block}
+\end{columns}
+\vspace{0.2em}
+\begin{beamercolorbox}[sep=0.4em,wd=\linewidth]{block body}
+\scriptsize
+\texttt{check} 另存 raw Wick 重构关系；special 对应 \texttt{raw\_wick\_relation}。与 UCA 对照的内存接口返回“坐标 \(\to\) 总系数”字典；文件沿用上述 JSON v3，\texttt{count} 只输出 \(N_{\rm list}\) 等统计。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}{3.1.2 pnn：distillation-wick-check 的回代验证}
+\centering
+\scriptsize
+\smallnote{pnn 用于后文 UCA 对照；本表保留已验收的 ppn/ppnn Wick-check 数据。}\par
+\renewcommand{\arraystretch}{1.12}
+\setlength{\tabcolsep}{4pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrll}
+\toprule
+对象 & ppn 数量 & ppnn 数量 & 验证内容 & 结果\\
+\midrule
+原始 Wick 图 & 2,880 & 518,400 & 逐图 check 映射覆盖 & 2,880/2,880；518,400/518,400\\
+basis contract & 219 & 4,298 & 每个独立代表只 contract 一次 & 全部生成\\
+basis 视图 & 2,760 & 493,992 & 映射所需的符号和裸轴 transpose 视图 & 全部生成\\
+依赖关系 & 2,661 & 514,102 & 每个非基底 Wick 的线性组合关系 & 全部覆盖\\
+随机 peram + C=3 反对称 VVV & 2,880 & 518,400 & 全部 raw Wick 与 check 回代逐项比较 & 全部通过\\
+随机 peram + C=6 反对称 VVV & 2,880 & 518,400 & 全部 raw Wick 与 check 回代逐项比较 & 全部通过\\
+\bottomrule
+\end{tabular}}
+\vspace{0.35em}
+\begin{beamercolorbox}[sep=0.5em,wd=\linewidth]{block body}
+\scriptsize
+令 \(R_s=\texttt{origen\_wick}[s]=\sum_{t\in T_s}c_{st}\,\texttt{basis}[b_{st}]\)，
+\(D_s=\texttt{origen\_wick\_sign}[s]\,\texttt{origen\_wick\_raw}[s]\)。basis 已包含代表 Wick 符号及所需裸轴 transpose。\[
+\epsilon_{\max}=\max_s\frac{|D_s-R_s|}{\max(|D_s|,|R_s|,10^{-30})}.
+\]
+本次逐图最大相对误差：ppn 在 \(C=3,6\) 下为 \(1.58\times10^{-14}\)、\(4.99\times10^{-13}\)；ppnn 为 \(1.11\times10^{-12}\)、\(6.58\times10^{-13}\)。ppnn 每个颜色维度均完整验证 518,400 条映射；八个开放 spin 轴使用固定随机投影。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}{3.1.2 现有 distillation 输出：八例与 ppnn}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.14}
+\setlength{\tabcolsep}{2.0pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrrr}
+\toprule
+例子 & Wick & 独立 & 依赖 & 桶数 & 最大相对误差 & independent(s) & 峰值 RSS\\
+\midrule
+pipi & 24 & 10 & 14 & 10 & 3.42e-15 & 0.006747 & 20.50 MiB\\
+pn & 36 & 18 & 18 & 18 & 2.12e-15 & 0.013393 & 20.17 MiB\\
+ppn & 2,880 & 219 & 2,661 & 219 & 4.99e-13 & 1.265962 & 27.63 MiB\\
+delta & 6 & 2 & 4 & 2 & 0 & 0.001777 & 21.84 MiB\\
+delta++delta- & 36 & 3 & 33 & 3 & 1.88e-16 & 0.014868 & 21.28 MiB\\
+pip & 24 & 24 & 0 & 24 & 0 & 0.005935 & 22.42 MiB\\
+pip-p & 6 & 6 & 0 & 6 & 0 & 0.001656 & 21.20 MiB\\
+pn\_omega\_pi+ & 3,456 & 908 & 2,548 & 908 & 4.75e-15 & 1.798358 & 39.73 MiB\\
+ppnn & 518,400 & 4,298 & 514,102 & 4,298 & 1.11e-12 & 288.688 & 410.23 MiB\\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.35em}
+\begin{beamercolorbox}[sep=0.45em,wd=\linewidth]{block body}
+表中 distillation-wick-independent 的计数和时间/RSS 是当前 checkout 的已提交基准；它们不是 2026-10-14 新鲜 normal-special 重跑。新鲜数据见 3.2.1。check 只用于正确性，不计入性能。normal-special-count 只报告合并后的 Nlist/Ncontr；不能把 count 时间当作 normal-special-independent 的完整输出时间。最大相对误差按前页定义，对开放 spin 指标使用固定随机投影。
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}{3.2.1 UCA / 递归法与本工作的 normal-special-independent}
+\scriptsize
+\renewcommand{\arraystretch}{1.16}
+\setlength{\tabcolsep}{3.2pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrl}
+\toprule
+算法 / 来源 & 3H 中位时间 (s) & 峰值 RSS (MiB) & 输出字典项 & 一致性 & 口径 \\
+\midrule
+UCA-P1 direct 本地复现 & 18.605 & 1007.9 & 3,775,680 & 基准；另 2 轮逐项相等 & 完整颜色--Dirac 字典 \\
+qcd colour-first 本地快照 & 14.509 & 1146.7 & 3,775,680 & 3 轮逐项相等 & 完整颜色--Dirac 字典 \\
+本项目 normal-special-independent & 5.151 & 1103.8 & 3,775,680 & 3 轮逐项相等 & 完整颜色--Dirac 字典 \\
+递归反对称积 + 完整展开 & 13.161 & 620.5 & 3,775,680 & 3 轮逐项相等 & 完整颜色--Dirac 字典 \\
+\bottomrule
+\end{tabular}}
+\vspace{0.35em}
+\begin{beamercolorbox}[sep=0.42em,wd=\linewidth]{block body}
+\scriptsize
+四行均为同一 3H（p+n+n）、source spin=(0,0,1) 的完整系数字典；2026-10-15 在 Python 3.11.17、macOS arm64 上依次运行各 3 个独立进程。表列时间中位数及三轮峰值 RSS 的最大值；生成后在计时外逐键核对整数系数，缺失、多余、系数差异均为 0。计时不含启动、导入、SQLite 落盘及核对。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}{3.2.2 PACS-CS、群论 block 与本项目输出}
+\scriptsize
+\renewcommand{\arraystretch}{1.18}
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.7cm}rrrrr@{}}
+\toprule
+输入/方法 & 原始 Wick & 结果/块 & contract 数目（融合/展开） & 全流程时间 & 峰值内存\\
+\midrule
+$^3$He / ppn，PACS-CS 论文口径 & 2,880 & 93 W-blocks & 93 / 744 & 论文未报告 & 论文未报告\\
+$^3$He / ppn，本地群论复现 & 2,880 & 93 blocks & 93 / 744 & 0.4898 s & 25.1 MiB\\
+$^3$He / ppn，normal-wick-block & 2,880 & 48 networks & 48 / -- & 15.851 s & 176.66 MiB\\
+$^3$He / ppn，\newline distillation-wick-independent & 2,880 & 219 basis & -- / 219 & 1.265962 s & 27.63 MiB\\
+$^4$He / ppnn，PACS-CS 论文口径 & 518,400 & 1,107 blocks & 1,107 / 17,712 & 论文未报告 & 论文未报告\\
+$^4$He / ppnn，本地群论复现 & 518,400 & 1,068 blocks & 1,068 / 17,088 & 90.5676 s & 619.2 MiB\\
+$^4$He / ppnn，normal-wick-block & 518,400 & 288 networks & 288 / -- & 211.2 s\textsuperscript{*} & 12.25 GiB\\
+$^4$He / ppnn，\newline distillation-wick-independent & 518,400 & 4,298 basis & -- / 4,298 & 288.688 s & 410.23 MiB\\
+\bottomrule
+\end{tabular}}
+\vspace{0.15em}
+\begin{beamercolorbox}[sep=0.3em,wd=\linewidth]{block body}
+\scriptsize
+\(W_{ab;ij}=S_{ai}S_{bj}-S_{aj}S_{bi}\)，其中 \(a,b\) 与 \(i,j\) 分别为 sink 与 source 的颜色--Dirac 复合指标。ppn/ppnn 的整体核子 block 收缩包含 8/16 个带符号 Wick 项；本地群论的 1068 blocks 和 PACS-CS 论文的 1107 结果不同。\texttt{--} 表示该栏未列值。
+\end{beamercolorbox}
+\vspace{0.1em}
+\smallnote{48/288 网络验证使用随机 normal peram 与固定 \(\epsilon\)。完整开放张量的最大绝对差除以两结果的最大幅值，ppn 为 \(4.16\times10^{-15}\)，ppnn 为 \(4.51\times10^{-14}\)；此项与前文逐 Wick 相对误差分开统计。}
+\par\smallnote{ppn block 新测含三表生成、适配、规划/证明及落盘；RSS 在数值验证前采样。\textsuperscript{*}211.2 s 仅为固定 ppnn block 的数值执行。各行时间范围不同。}
+\end{frame}
+
+
+
+
+\begin{frame}{3.3 本项目的优势与适用边界}
+\small
+\begin{columns}[T,onlytextwidth]
+\column{0.31\linewidth}
+\begin{block}{输入更通用}
+\scriptsize
+可以直接处理任意动量/坐标、任意味道的介子--重子混合；distillation 与 normal 共用一套有序算符接口，并分别把端点信息放在 VVV/VDV 或 peram 上。
+\end{block}
+\column{0.31\linewidth}
+\begin{block}{减少先验对称性依赖}
+\scriptsize
+PACS-CS 的 93/1107 和局部群论 block 需要提前知道并证明特定核子交换、同位旋和投影结构；这些 block 不能自动推广到任意 Gamma、动量、坐标和开放轴。
+\end{block}
+\column{0.31\linewidth}
+\begin{block}{保留可审计输出}
+\scriptsize
+Wick 模式保留 raw-to-basis、符号和 transpose；special 模式输出具体颜色--Dirac 坐标。normal-special 的 3H 字典与 UCA 参考逐项相等，同时明确 count-only 和固定 block 的验证边界。
+\end{block}
+\end{columns}
+\vspace{0.35em}
+\begin{beamercolorbox}[sep=0.48em,wd=\linewidth]{block body}
+\scriptsize
+在同一 3H 完整颜色--Dirac 字典上，三轮中位时间为 UCA 本地复现 18.605 s、本项目 normal-special-independent 5.151 s；三轮均逐项相等。这个比较只说明同一输出口径下的本地实测，不把不同论文的压缩对象或硬件结果直接混合。
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}{3.4 可复现实验入口}
+\small
+\begin{block}{从同一份算符输入开始}
+在 JSON 文件顶部选择 \texttt{input}、\texttt{mode}、\texttt{output}，再给出有序 sink/source 算符。安装环境后，从项目根目录运行统一入口：
+\begin{center}
+\texttt{python -m wick\_reducer --input-file input.json}
+\end{center}
+结果写入 \texttt{result/\{input\}\_\{mode\}\_\{output\}/}。
+\end{block}
+\vspace{0.4em}
+\begin{beamercolorbox}[sep=0.65em,wd=\linewidth]{block body}
+安装、输入样例、参数覆盖和验证命令详见项目根目录的 \texttt{README.md} 与 \texttt{QUICKSTART.md}。
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}{总结后的展望}
+\begin{columns}[T,onlytextwidth]
+\column{0.32\linewidth}
+\begin{block}{当前支持}
+任意可成功 Wick 收缩的场列表；同味/异味介子；VVV/VDV；具体 4x4 Gamma；开放 sink/source 裸指标；同位旋开关。
+\end{block}
+\column{0.32\linewidth}
+\begin{block}{资源策略}
+peram incidence 预筛、逐项短路、sink payload 缓存和流式 Gram--Schmidt。不同类别互不影响，适合类别级并行。
+\end{block}
+\column{0.32\linewidth}
+\begin{block}{未来}
+完整多 transporter sink rank、稀疏/分块 Gram、更多 spin tensor 端口和 GPU 数值后端。
+\end{block}
+\end{columns}
+\vspace{0.45em}
+\begin{beamercolorbox}[sep=0.55em,wd=\linewidth]{block body}
+\kw{结论：}算法把“结构等价”和“数值线性相关”分层处理；输出能够直接用于独立 contract 计算，也能够用 check 模式回代每一张原始 Wick 图。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}[allowframebreaks]{参考文献与项目}
+\small
+\begin{enumerate}\itemsep0.55em
+\item Peardon et al., A novel quark-field creation operator construction for hadronic physics in lattice QCD, Phys. Rev. D 80 (2009) 054506.
+\item Doi and Endres, Unified contraction algorithm for multi-baryon correlators on the lattice, arXiv:1205.0585.
+\item Gunther, Toth, and Varnhorst, A recursive approach to determine correlation functions in multi-baryon systems, arXiv:1301.4895.
+\item Chen, Edwards, and Mao, Graph Contractions for Calculating Correlation Functions in Lattice QCD, PASC 2023.
+\end{enumerate}
+\vspace{0.3em}
+\begin{beamercolorbox}[sep=0.55em,wd=\linewidth]{block body}
+源码：项目根目录\\
+算法报告：report/historical/蒸馏Wick约化算法报告.md\\
+输出支持 independent、check、block 和 count 四种用途；具体组合由 input/mode 约束。
+\end{beamercolorbox}
+\end{frame}
+\appendix
+\begin{frame}{附录 A：轨道计数与开放张量 basis}
+\small
+固定有序算符和 flavor-compatible Wick 配对，记 raw 集合为
+\(\Omega_{\rm raw}\)。同一个核子块内相同 flavor 的槽位交换形成内部群
+\(K\)，外部核子块交换（ppnn 还包括声明的 isospin flip）形成状态群
+\(G\)：
+\[
+ X=\Omega_{\rm raw}/K,\qquad X/G=(\Omega_{\rm raw}/K)/G .
+\]
+\begin{columns}[T,onlytextwidth]
+\column{0.48\linewidth}
+\begin{block}{ppn}
+\scriptsize
+\[
+\begin{gathered}
+ |\Omega_{\rm raw}|=2880,\quad |K|=2^3=8,\\
+ |X|=360,\quad |G|=4,\quad |X/G|=93 .
+\end{gathered}
+\]
+\end{block}
+\column{0.48\linewidth}
+\begin{block}{ppnn}
+\scriptsize
+\[
+\begin{gathered}
+ |\Omega_{\rm raw}|=518400,\quad |K|=2^4=16,\\
+ |X|=32400,\quad |G|=32,\quad |X/G|=1068 .
+\end{gathered}
+\]
+\end{block}
+\end{columns}
+\vspace{0.25em}
+\begin{beamercolorbox}[sep=0.45em,wd=\linewidth]{block body}
+\scriptsize
+若 \(q:\Omega_{\rm raw}\to X\) 满足 \(q(g\cdot w)=g\cdot q(w)\)，则 raw 扩展群的轨道与两层商空间的轨道自然对应。这个等价关系只处理代码中明确声明的 flavor/state 作用；它不自动包含 Gamma、VVV、动量、projector 或开放 Dirac 轴。
+\end{beamercolorbox}
+\end{frame}
+\begin{frame}{附录 A：Burnside 计数与随机复现}
+\small
+有限群作用满足 Burnside 引理：
+\[
+ |X/G|=\frac{1}{|G|}\sum_{g\in G}|\operatorname{Fix}_X(g)| .
+\]
+\begin{columns}[T,onlytextwidth]
+\column{0.48\linewidth}
+\begin{block}{ppn}
+\scriptsize
+固定点直方图为
+\texttt{\{360:1, 8:1, 4:1, 0:1\}}。\[
+ (360+8+4+0)/4=93 .
+\]
+显式 BFS 轨道枚举、state 覆盖和 raw 映射审计均通过。
+\end{block}
+\column{0.48\linewidth}
+\begin{block}{ppnn}
+\scriptsize
+固定点直方图为
+\texttt{\{32400:1,576:1,180:4,96:4,24:4,0:18\}}。\[
+ (32400+576+4\cdot180+4\cdot96+4\cdot24)/32=1068 .
+\]
+518,400 个 raw ID 全部覆盖且每个只出现一次。
+\end{block}
+\end{columns}
+\vspace{0.2em}
+\begin{beamercolorbox}[sep=0.4em,wd=\linewidth]{block body}
+\scriptsize
+每个 seed 的完整 raw Wick 和 93/1068 orbit 重构使用同一组随机 peram/VVV 输入，通过共同输入因子进入两条路径，没有分别重新生成输入；因此可以恢复完整 Wick：\(\text{direct}_{\rm raw}=\text{orbit}_{\rm explicit}=\text{weighted}_{\rm representative}\)。ppn 最大相对残差约 \(1.03\times10^{-14}\)；ppnn 三个 seed 的残差为 0，均低于 \(10^{-12}\)。这证明的是已声明 covariant fixture 的重构恒等式，不是任意裸 peram 都可只算 93/1068 项。
+\end{beamercolorbox}
+\end{frame}
+\end{document}

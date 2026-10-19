@@ -1,0 +1,61 @@
+{
+  "name": "pip-p",
+  "input": "normal",
+  "mode": "wick",
+  "output": "block",
+  "operators": [
+    [
+      {
+        "side": "sink",
+        "kind": "baryon",
+        "species": "p",
+        "label": "sink_p",
+        "flavors": [
+          "u",
+          "u",
+          "d"
+        ],
+        "gamma": "Cgamma5",
+        "gamma_slots": [
+          1,
+          2
+        ],
+        "open_slot": 0
+      }
+    ],
+    [
+      {
+        "side": "source",
+        "kind": "meson",
+        "species": "pi0_uubar",
+        "label": "source_pi",
+        "flavors": [
+          "u",
+          "u"
+        ],
+        "gamma": "gamma5",
+        "gamma_slots": [
+          0,
+          1
+        ]
+      },
+      {
+        "side": "source",
+        "kind": "baryon",
+        "species": "p",
+        "label": "source_p",
+        "flavors": [
+          "u",
+          "u",
+          "d"
+        ],
+        "gamma": "Cgamma5_dagger",
+        "gamma_slots": [
+          1,
+          2
+        ],
+        "open_slot": 0
+      }
+    ]
+  ]
+}

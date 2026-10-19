@@ -1,0 +1,15 @@
+name: wick-diss-reduce
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  # Python 3.11 is supported on the common Conda platforms and is covered by
+  # the project's Python >=3.9 compatibility range.
+  - python=3.11
+  - pip
+  - setuptools>=61
+  - wheel
+  - numpy>=1.23
+  - opt_einsum>=3.3

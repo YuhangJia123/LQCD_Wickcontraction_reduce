@@ -1,0 +1,141 @@
+{
+  "benchmark": "3H = p+n+n; relativistic C gamma5; source external spins (0,0,1)",
+  "platform": "macOS-14.8.4-arm64-arm-64bit",
+  "python": "3.11.17",
+  "timing_scope": "Fresh process per method. Recursive time includes sparse antisymmetric tensor construction and complete ordered-dictionary expansion; direct time includes full UCA-style dictionary construction.",
+  "memory_scope": "Peak process RSS after complete dictionary generation, before SQLite comparison.",
+  "repeats": 1,
+  "recursive_method_scope": "Implements the canonical antisymmetric-tuple recursion of arXiv:1301.4895 on the local fixture's sparse source tensors, then expands the final tensor. This is not a reproduction of the paper's sink-pruned, gauge-field-dependent Lambda operation list.",
+  "methods": [
+    {
+      "method": "uca_p1_direct",
+      "seconds": 16.28201795811765,
+      "peak_rss_mib": 997.8125,
+      "entries": 3775680,
+      "details": {},
+      "python": "3.11.17",
+      "seconds_median": 16.28201795811765,
+      "seconds_min": 16.28201795811765,
+      "seconds_max": 16.28201795811765,
+      "peak_rss_mib_max": 997.8125,
+      "repeats": 1,
+      "samples": [
+        {
+          "method": "uca_p1_direct",
+          "seconds": 16.28201795811765,
+          "peak_rss_mib": 997.8125,
+          "entries": 3775680,
+          "details": {},
+          "python": "3.11.17"
+        }
+      ]
+    },
+    {
+      "method": "recursive_antisymmetric_product",
+      "seconds": 10.771221041213721,
+      "peak_rss_mib": 619.921875,
+      "entries": 3775680,
+      "details": {
+        "flavor_order": [
+          "d",
+          "u"
+        ],
+        "intermediate_components": [
+          {
+            "vertex": "pbar",
+            "local_components": 21,
+            "recursive_components": 21
+          },
+          {
+            "vertex": "nbar_1",
+            "local_components": 21,
+            "recursive_components": 231
+          },
+          {
+            "vertex": "nbar_2",
+            "local_components": 21,
+            "recursive_components": 1311
+          }
+        ],
+        "candidate_updates": 5313,
+        "valid_updates": 2967,
+        "canonical_tensor_components": 1311,
+        "recursion_seconds": 0.007057500071823597,
+        "expansion_seconds": 10.764163541141897,
+        "published_paper_N_lambda": 381978,
+        "published_paper_N_L": 1311,
+        "published_paper_N_list": 3775680,
+        "published_paper_N_contr": 471960,
+        "local_update_count_is_paper_N_lambda": false
+      },
+      "python": "3.11.17",
+      "seconds_median": 10.771221041213721,
+      "seconds_min": 10.771221041213721,
+      "seconds_max": 10.771221041213721,
+      "peak_rss_mib_max": 619.921875,
+      "repeats": 1,
+      "samples": [
+        {
+          "method": "recursive_antisymmetric_product",
+          "seconds": 10.771221041213721,
+          "peak_rss_mib": 619.921875,
+          "entries": 3775680,
+          "details": {
+            "flavor_order": [
+              "d",
+              "u"
+            ],
+            "intermediate_components": [
+              {
+                "vertex": "pbar",
+                "local_components": 21,
+                "recursive_components": 21
+              },
+              {
+                "vertex": "nbar_1",
+                "local_components": 21,
+                "recursive_components": 231
+              },
+              {
+                "vertex": "nbar_2",
+                "local_components": 21,
+                "recursive_components": 1311
+              }
+            ],
+            "candidate_updates": 5313,
+            "valid_updates": 2967,
+            "canonical_tensor_components": 1311,
+            "recursion_seconds": 0.007057500071823597,
+            "expansion_seconds": 10.764163541141897,
+            "published_paper_N_lambda": 381978,
+            "published_paper_N_L": 1311,
+            "published_paper_N_list": 3775680,
+            "published_paper_N_contr": 471960,
+            "local_update_count_is_paper_N_lambda": false
+          },
+          "python": "3.11.17"
+        }
+      ]
+    }
+  ],
+  "dictionary_verification": {
+    "all_runs_exact_dictionary_equal": true,
+    "runs": [
+      {
+        "direct_entries": 3775680,
+        "recursive_entries": 3775680,
+        "missing_keys": 0,
+        "extra_keys": 0,
+        "coefficient_mismatches": 0,
+        "exact_dictionary_equal": true
+      }
+    ]
+  },
+  "paper_values": {
+    "N_lambda": 381978,
+    "N_L": 1311,
+    "N_list": 3775680,
+    "N_contr": 471960,
+    "citation": "https://arxiv.org/abs/1301.4895, Table 5, relativistic p+n+n (0,0,1)"
+  }
+}

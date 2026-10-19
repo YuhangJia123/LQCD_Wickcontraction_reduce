@@ -1,0 +1,10 @@
+{
+  "name": "pn",
+  "input": "normal",
+  "mode": "wick",
+  "output": "check",
+  "wick_scope": "cross_time",
+  "operator_mode": "normal",
+  "result_file": "pn_normal_wick_check.py",
+  "source": "wick_reducer.unified"
+}

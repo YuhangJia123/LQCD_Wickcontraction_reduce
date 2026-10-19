@@ -1,0 +1,72 @@
+{
+  "name": "pipi",
+  "input": "normal",
+  "mode": "special",
+  "output": "count",
+  "operators": [
+    [
+      {
+        "side": "sink",
+        "kind": "meson",
+        "species": "pi0_uubar",
+        "label": "sink_pi_1",
+        "flavors": [
+          "u",
+          "u"
+        ],
+        "gamma": "gamma5",
+        "gamma_slots": [
+          0,
+          1
+        ]
+      },
+      {
+        "side": "sink",
+        "kind": "meson",
+        "species": "pi0_uubar",
+        "label": "sink_pi_2",
+        "flavors": [
+          "u",
+          "u"
+        ],
+        "gamma": "gamma5",
+        "gamma_slots": [
+          0,
+          1
+        ]
+      }
+    ],
+    [
+      {
+        "side": "source",
+        "kind": "meson",
+        "species": "pi0_uubar",
+        "label": "source_pi_1",
+        "flavors": [
+          "u",
+          "u"
+        ],
+        "gamma": "gamma5",
+        "gamma_slots": [
+          0,
+          1
+        ]
+      },
+      {
+        "side": "source",
+        "kind": "meson",
+        "species": "pi0_uubar",
+        "label": "source_pi_2",
+        "flavors": [
+          "u",
+          "u"
+        ],
+        "gamma": "gamma5",
+        "gamma_slots": [
+          0,
+          1
+        ]
+      }
+    ]
+  ]
+}

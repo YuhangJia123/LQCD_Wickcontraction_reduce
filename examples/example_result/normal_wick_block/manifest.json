@@ -1,0 +1,10 @@
+{
+  "name": "pip-p",
+  "input": "normal",
+  "mode": "wick",
+  "output": "block",
+  "wick_scope": "cross_time",
+  "operator_mode": "normal",
+  "result_file": "pip-p_normal_wick_block.py",
+  "source": "wick_reducer.unified"
+}

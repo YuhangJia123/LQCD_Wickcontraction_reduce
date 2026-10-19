@@ -1,0 +1,8 @@
+{"name":"pnn","input":"normal","mode":"special","output":"independent","wick_scope":"cross_time","operators":[
+{"side":"sink","kind":"baryon","species":"p","label":"sink_p","flavors":["u","d","u"],"gamma":"Cgamma5","gamma_slots":[0,1],"open_slot":2},
+{"side":"sink","kind":"baryon","species":"n","label":"sink_n1","flavors":["d","u","d"],"gamma":"Cgamma5","gamma_slots":[0,1],"open_slot":2},
+{"side":"sink","kind":"baryon","species":"n","label":"sink_n2","flavors":["d","u","d"],"gamma":"Cgamma5","gamma_slots":[0,1],"open_slot":2},
+{"side":"source","kind":"baryon","species":"p","label":"source_p","flavors":["u","d","u"],"gamma":"Cgamma5","gamma_slots":[0,1],"open_slot":2,"external_spin":0},
+{"side":"source","kind":"baryon","species":"n","label":"source_n1","flavors":["d","u","d"],"gamma":"Cgamma5","gamma_slots":[0,1],"open_slot":2,"external_spin":0},
+{"side":"source","kind":"baryon","species":"n","label":"source_n2","flavors":["d","u","d"],"gamma":"Cgamma5","gamma_slots":[0,1],"open_slot":2,"external_spin":1}
+]}

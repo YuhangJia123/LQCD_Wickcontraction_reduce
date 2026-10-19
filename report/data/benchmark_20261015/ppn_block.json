@@ -1,0 +1,337 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "created_at_utc": "2026-10-15T07:22:02.076259+00:00",
+  "case": "ppn",
+  "input": "normal",
+  "mode": "wick",
+  "output": "block",
+  "runtime": {
+    "python": "3.11.17 (main, Oct  6 2026, 23:54:59) [Clang 21.1.8 ]",
+    "numpy": "2.4.6",
+    "platform": "macOS-14.8.4-arm64-arm-64bit",
+    "machine": "arm64",
+    "git_revision": "21bed1d09d02b34fd8bfe4d8049dcc38f88274db",
+    "thread_environment": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1"
+    }
+  },
+  "parameters": {
+    "max_w_types": 1,
+    "search_seconds": 5.0,
+    "search_budget": 40,
+    "seeds": [
+      20261015
+    ]
+  },
+  "measurement_scope": {
+    "time": "Fresh normal independent-table generation, output adapter and raw pairing family, block_reduce including its exact symbolic certificate, and portable block execution-table write. Interpreter startup/imports and subsequent random numerical validation are excluded from the wall time.",
+    "memory": "Process ru_maxrss sampled immediately after execution-table write, before numerical validation; includes interpreter and imports. Bytes on macOS, KiB converted to bytes elsewhere.",
+    "numerical_target": "All six open Dirac axes, each of dimension four."
+  },
+  "phase_seconds": {
+    "generate_independent_tables": 1.0587052500341088,
+    "adapter_and_pairing_family": 0.4749656659550965,
+    "block_plan_and_symbolic_proof": 14.30710433400236,
+    "write_block_execution_tables": 0.009932999964803457
+  },
+  "generator": {
+    "operator_mode": "normal",
+    "raw_wick_count": 2880,
+    "independent_count": 219,
+    "exported_view_count": 2760,
+    "generation_seconds": 1.0578756670001894
+  },
+  "raw_wick_count": 2880,
+  "basis_contract_count": 219,
+  "basis_view_count": 2760,
+  "block_network_count": 48,
+  "w_definition_count": 1,
+  "symbolic_verified": true,
+  "wall_seconds": 15.850817790953442,
+  "peak_rss_bytes": 185237504,
+  "peak_rss_mib": 176.65625,
+  "source_output": {
+    "path": "/private/tmp/ppn_block_report_py311_20261015/normal_ppn_independent.py",
+    "sha256": "42b634b5de6e30638b0f92430c8734738ce25b1f045c82e9397a1fe4123cb872",
+    "bytes": 565287
+  },
+  "execution_output": {
+    "path": "/private/tmp/ppn_block_report_py311_20261015/plan_execution.json",
+    "sha256": "8822d25e3e6e1eec9fcaf6f3be99f7e7a6b30824b06afe49dc2cd6f2de08e771",
+    "bytes": 177446,
+    "certificate_included": false
+  },
+  "plan_stats": {
+    "input_contracts": 219,
+    "input_views": 2760,
+    "initial_network_count": 219,
+    "network_count": 48,
+    "w_type_count": 1,
+    "search_states": 0,
+    "search_complete": false,
+    "budget_exhausted": true,
+    "optimality_scope": "best_found",
+    "restricted_batch_search": false,
+    "search_strategy": "single_w_type",
+    "output_shape": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "max_w_types": 1,
+    "max_bridge_steps": 1,
+    "search_budget": 40,
+    "search_seconds": 5.0,
+    "pairing_family_supplied": true,
+    "global_fallback_reason": null,
+    "global_layouts_tested": 7,
+    "global_layout_complete": false,
+    "global_layout_scope": "supplied_pairing_family_global_matchings",
+    "global_best_layouts": [
+      {
+        "pairs": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            6,
+            7
+          ]
+        ],
+        "network_count": 48,
+        "burnside_count": 48
+      }
+    ],
+    "auto_endpoint_generators": [
+      [
+        [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ]
+      ],
+      [
+        [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ],
+        [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      ],
+      [
+        [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ],
+        [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ]
+      ]
+    ],
+    "auto_endpoint_witnesses": [
+      {
+        "sink": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "source": [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ],
+        "output": [
+          0,
+          1,
+          2,
+          4,
+          3,
+          5
+        ],
+        "sign": -1
+      },
+      {
+        "sink": [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ],
+        "source": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "output": [
+          1,
+          0,
+          2,
+          3,
+          4,
+          5
+        ],
+        "sign": -1
+      },
+      {
+        "sink": [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ],
+        "source": [
+          3,
+          4,
+          5,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ],
+        "output": [
+          1,
+          0,
+          2,
+          4,
+          3,
+          5
+        ],
+        "sign": 1
+      }
+    ],
+    "normalization_seconds": 0.6869998751208186,
+    "parse_seconds": 0.03738504112698138,
+    "family_mapping_seconds": 3.1108105829916894,
+    "plan_materialization_seconds": 1.1504748750012368,
+    "search_elapsed_seconds": 5.003074542153627,
+    "symbolic_verified": true,
+    "elapsed_seconds": 14.289153916062787,
+    "proof_seconds": 4.288029792020097
+  },
+  "validation": {
+    "status": "passed",
+    "samples": [
+      {
+        "seed": 20261015,
+        "output_shape": [
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ],
+        "reference_contract_calls": 219,
+        "block_contract_calls": 48,
+        "reference_evaluation_seconds": 0.34197825007140636,
+        "block_evaluation_seconds": 0.6496673747897148,
+        "error": {
+          "maximum_absolute": 2.441754138272187e-08,
+          "maximum_relative": 4.161336738530926e-15,
+          "norm_relative": 1.9899902626432202e-15
+        }
+      }
+    ],
+    "wall_seconds": 1.0525712089147419,
+    "random_inputs": "Complex standard-normal perambulators by tensor identity.",
+    "fixed_inputs": "Exact epsilon_color, delta_color, and registered Dirac matrices.",
+    "normalization": "max(abs(reference), abs(actual), 1e-30) over the full tensor",
+    "tolerance": 1e-10,
+    "vvv_randomized": false,
+    "full_open_tensor": true
+  }
+}

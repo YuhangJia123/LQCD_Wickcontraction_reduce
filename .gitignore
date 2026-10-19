@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+# Keep bundled unified result examples; ignore generated verification output.
+verify_output/
+.venv/
+*.egg-info/
+build/
+dist/
+.codex/
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.xdv

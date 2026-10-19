@@ -1,0 +1,10 @@
+{
+  "name": "pipi",
+  "input": "normal",
+  "mode": "special",
+  "output": "count",
+  "wick_scope": "complete",
+  "operator_mode": "normal",
+  "result_file": "pipi_normal_special_count.json",
+  "source": "wick_reducer.unified"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "pip",
+  "input": "distillation",
+  "mode": "wick",
+  "output": "independent",
+  "wick_scope": "cross_time",
+  "operator_mode": "distillation",
+  "result_file": "pip_distillation_wick_independent.py",
+  "source": "wick_reducer.unified"
+}

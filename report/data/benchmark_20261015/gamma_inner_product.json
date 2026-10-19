@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "matrix_registry": "correlator_wick_normalizer._euclidean_gamma_matrices",
+  "conventions": {
+    "gamma5": "gamma1 gamma2 gamma3 gamma4",
+    "C": "gamma4 gamma2",
+    "sigma_mu_nu": "(gamma_mu gamma_nu - gamma_nu gamma_mu)/2; mu<nu",
+    "A": "C gamma5",
+    "B": "A.T"
+  },
+  "single_factor": {
+    "normalization": 0.25,
+    "A_squared_frobenius_norm": 4.0,
+    "B_squared_frobenius_norm": 4.0,
+    "raw_inner_A_B_real": -4.0,
+    "raw_inner_A_B_imag": 0.0,
+    "normalized_squared_norm_A": 1.0,
+    "normalized_squared_norm_B": 1.0,
+    "normalized_inner_A_B_real": -1.0,
+    "max_abs_B_plus_A": 0.0
+  },
+  "dirac_basis": {
+    "basis": "I, gamma5, gamma_mu, gamma5 gamma_mu, sigma_mu_nu (mu<nu)",
+    "size": 16,
+    "normalized_gram_max_abs_difference_from_identity": 0.0
+  },
+  "two_factor_tensor_product": {
+    "T": "A tensor A",
+    "U": "B tensor B",
+    "normalization": 0.0625,
+    "T_squared_frobenius_norm": 16.0,
+    "U_squared_frobenius_norm": 16.0,
+    "normalized_squared_norm_T": 1.0,
+    "normalized_squared_norm_U": 1.0,
+    "normalized_inner_T_U_real": 1.0,
+    "max_abs_T_minus_U": 0.0
+  },
+  "tensor_product_rule": "For n factors with aligned pair indices, normalized Hilbert-Schmidt inner product is 4^(-n) tr(T^dagger U), and factorizes into the n normalized single-factor inner products.",
+  "dual_tensor": {
+    "identity": "gamma5 sigma12 = -sigma34",
+    "max_abs_gamma5_sigma12_plus_sigma34": 0.0,
+    "adds_independent_basis_direction": false
+  },
+  "implementation_note": "The runtime uses unnormalized all-index Dirac inner products. The report normalization is a positive overall scale within a fixed tensor space and does not change equality or linear dependence."
+}

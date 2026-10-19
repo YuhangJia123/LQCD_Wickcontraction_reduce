@@ -1,0 +1,262 @@
+{
+  "generated": "2026-10-14",
+  "environment": {
+    "platform": "macOS-14.8.4-arm64-arm-64bit",
+    "python": "3.11.17"
+  },
+  "eight_examples": {
+    "pipi": {
+      "raw_wicks": 24,
+      "raw_wick_enumeration_seconds_median": 9.670807048678398e-05,
+      "cross_time_wicks": 4,
+      "fused_entries": 264,
+      "fused_wick_maps": 4,
+      "fused_seconds_median": 0.0006298748776316643,
+      "fused_status": "complete_cross_time_path",
+      "fused_reason": null,
+      "exact_independent_wicks": null,
+      "exact_dependent_wicks": null,
+      "exact_basis_terms": null,
+      "exact_output_bytes": null,
+      "exact_output_seconds_median": null,
+      "peak_rss_mib_max": 20.21875,
+      "runs": 1
+    },
+    "pn": {
+      "raw_wicks": 36,
+      "raw_wick_enumeration_seconds_median": 0.00020070909522473812,
+      "cross_time_wicks": 36,
+      "fused_entries": 9432,
+      "fused_wick_maps": 36,
+      "fused_seconds_median": 0.004904832923784852,
+      "fused_status": "complete_cross_time_path",
+      "fused_reason": null,
+      "exact_independent_wicks": null,
+      "exact_dependent_wicks": null,
+      "exact_basis_terms": null,
+      "exact_output_bytes": null,
+      "exact_output_seconds_median": null,
+      "peak_rss_mib_max": 21.953125,
+      "runs": 1
+    },
+    "ppn": {
+      "raw_wicks": 2880,
+      "raw_wick_enumeration_seconds_median": 0.010729874949902296,
+      "cross_time_wicks": 2880,
+      "fused_entries": 3775680,
+      "fused_wick_maps": 2880,
+      "fused_seconds_median": 2.707331374986097,
+      "fused_status": "complete_cross_time_path",
+      "fused_reason": null,
+      "exact_independent_wicks": null,
+      "exact_dependent_wicks": null,
+      "exact_basis_terms": null,
+      "exact_output_bytes": null,
+      "exact_output_seconds_median": null,
+      "peak_rss_mib_max": 833.234375,
+      "runs": 1
+    },
+    "delta": {
+      "raw_wicks": 6,
+      "raw_wick_enumeration_seconds_median": 7.449998520314693e-05,
+      "cross_time_wicks": 6,
+      "fused_entries": 54,
+      "fused_wick_maps": 6,
+      "fused_seconds_median": 0.0004547080025076866,
+      "fused_status": "complete_cross_time_path",
+      "fused_reason": null,
+      "exact_independent_wicks": null,
+      "exact_dependent_wicks": null,
+      "exact_basis_terms": null,
+      "exact_output_bytes": null,
+      "exact_output_seconds_median": null,
+      "peak_rss_mib_max": 20.3125,
+      "runs": 1
+    },
+    "delta++delta-": {
+      "raw_wicks": 36,
+      "raw_wick_enumeration_seconds_median": 0.00020087510347366333,
+      "cross_time_wicks": 36,
+      "fused_entries": 2916,
+      "fused_wick_maps": 36,
+      "fused_seconds_median": 0.002387208165600896,
+      "fused_status": "complete_cross_time_path",
+      "fused_reason": null,
+      "exact_independent_wicks": null,
+      "exact_dependent_wicks": null,
+      "exact_basis_terms": null,
+      "exact_output_bytes": null,
+      "exact_output_seconds_median": null,
+      "peak_rss_mib_max": 20.90625,
+      "runs": 1
+    },
+    "pip": {
+      "raw_wicks": 24,
+      "raw_wick_enumeration_seconds_median": 0.00013375002890825272,
+      "cross_time_wicks": 6,
+      "fused_entries": 1260,
+      "fused_wick_maps": 6,
+      "fused_seconds_median": 0.0011059162206947803,
+      "fused_status": "complete_cross_time_path",
+      "fused_reason": null,
+      "exact_independent_wicks": null,
+      "exact_dependent_wicks": null,
+      "exact_basis_terms": null,
+      "exact_output_bytes": null,
+      "exact_output_seconds_median": null,
+      "peak_rss_mib_max": 20.1875,
+      "runs": 1
+    },
+    "pip-p": {
+      "raw_wicks": 6,
+      "raw_wick_enumeration_seconds_median": 8.208397775888443e-05,
+      "cross_time_wicks": null,
+      "fused_entries": null,
+      "fused_wick_maps": null,
+      "fused_seconds_median": null,
+      "fused_status": "unsupported_by_cross_time_path",
+      "fused_reason": "sink and source must contain the same number of fields",
+      "exact_independent_wicks": 6,
+      "exact_dependent_wicks": 0,
+      "exact_basis_terms": 107136,
+      "exact_output_bytes": 64454048,
+      "exact_output_seconds_median": 1.535478499950841,
+      "peak_rss_mib_max": 317.890625,
+      "runs": 1
+    },
+    "pn_omega_pi+": {
+      "example": "pn_omega_pi+",
+      "source": "wick_reducer.operator_model.operator_library",
+      "raw_wicks": 3456,
+      "raw_wick_enumeration_seconds": 0.01788033382035792,
+      "fused_attempt": {
+        "max_entries": 100000000,
+        "status": "bounded_memory_error",
+        "message": "coefficient dictionary exceeded max_entries; no full dictionary materialized"
+      },
+      "validation_scope": "raw Wick enumeration completed; full fused dictionary deferred because expected output exceeds bounded 100M entry safety cap",
+      "peak_rss_mib_raw_enumeration": 20.046875
+    }
+  },
+  "ppnn_count": {
+    "wick_maps": 518400,
+    "nlist": 1407974400,
+    "ncontr": 87998400,
+    "matches_paper_counts": true,
+    "count_scope": "exact count only; no global coordinate dictionary was emitted",
+    "peak_rss_mib": 193.5,
+    "seconds": {
+      "colour_support_and_orbits": 0.4051267500035465,
+      "dirac_orbit_accumulation": 0.9363903750199825,
+      "wick_and_incidence": 3.0657236671540886
+    }
+  },
+  "3h_comparison": {
+    "methods": [
+      {
+        "id": "uca_p1_direct",
+        "label": "UCA-P1 direct local reproduction",
+        "median_seconds": 16.380633916007355,
+        "peak_rss_mib_max": 992.75,
+        "entries": 3775680,
+        "dictionary_verification": {
+          "reference_entry_count_matches_expected": true,
+          "repeated_reference_runs_exactly_equal": false,
+          "repeat_comparisons": []
+        }
+      },
+      {
+        "id": "qcd_colour_first",
+        "label": "qcd colour-first local implementation",
+        "median_seconds": 12.031533458968624,
+        "peak_rss_mib_max": 1142.09375,
+        "entries": 3775680,
+        "dictionary_verification": {
+          "all_runs_exact_dictionary_equal": true,
+          "run_comparisons": [
+            {
+              "reference_entries": 3775680,
+              "candidate_entries": 3775680,
+              "missing_keys": 0,
+              "extra_keys": 0,
+              "coefficient_mismatches": 0,
+              "exact_dictionary_equal": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "current_incidence_s3_fused",
+        "label": "current incidence + global-colour S3 fused method",
+        "median_seconds": 2.6967476659920067,
+        "peak_rss_mib_max": 827.796875,
+        "entries": 3775680,
+        "dictionary_verification": {
+          "all_runs_exact_dictionary_equal": true,
+          "run_comparisons": [
+            {
+              "reference_entries": 3775680,
+              "candidate_entries": 3775680,
+              "missing_keys": 0,
+              "extra_keys": 0,
+              "coefficient_mismatches": 0,
+              "exact_dictionary_equal": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "3h_recursive_comparison": {
+    "methods": [
+      {
+        "method": "uca_p1_direct",
+        "seconds_median": 16.28201795811765,
+        "peak_rss_mib_max": 997.8125,
+        "entries": 3775680
+      },
+      {
+        "method": "recursive_antisymmetric_product",
+        "seconds_median": 10.771221041213721,
+        "peak_rss_mib_max": 619.921875,
+        "entries": 3775680
+      }
+    ],
+    "dictionary_verification": {
+      "all_runs_exact_dictionary_equal": true,
+      "runs": [
+        {
+          "direct_entries": 3775680,
+          "recursive_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "pn_omega_pi+ fused dictionary exceeded bounded 100,000,000-entry safety cap; only raw Wick enumeration was completed.",
+    "ppnn is count-only; no 1,407,974,400-entry independent dictionary was materialized.",
+    "Fresh UCA and incidence+S3 timing is one isolated run each; use previous 3-run file for medians where needed."
+  ],
+  "merged_normal_special_cross_time": {
+    "fixture": "/private/tmp/pnn_special.json",
+    "status": "completed",
+    "wall_seconds": 4.902367917122319,
+    "peak_rss_mib": 1110.953125,
+    "nlist": 3775680,
+    "wick_maps": 2880,
+    "dictionary_entries": 3775680,
+    "note": "normal-special cross_time in-memory calculation with explicit external_spin fixture; write_unified writes the JSON v3 file schema."
+  },
+  "merged_normal_special_complete_smoke": {
+    "status": "time_limit",
+    "time_limit_seconds": 20,
+    "peak_rss_mib": 825.546875,
+    "max_entries": 100000,
+    "fixture": "verify_code.ppnn_state_quotient_audit._operators()",
+    "note": "normal-special complete in-memory calculation entered the general fused kernel but did not reach the bounded max_entries within the recorded time limit; no count-only substitution."
+  }
+}

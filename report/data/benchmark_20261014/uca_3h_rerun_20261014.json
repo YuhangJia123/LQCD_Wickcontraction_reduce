@@ -1,0 +1,167 @@
+{
+  "benchmark": "3H = p+n+n, standard C gamma5, source external spins (0,0,1)",
+  "fixture": {
+    "sink_baryons": [
+      "p",
+      "n",
+      "n"
+    ],
+    "source_baryons": [
+      "pbar",
+      "nbar",
+      "nbar"
+    ],
+    "wick_maps": 2880,
+    "paper_nlist": 3775680,
+    "paper_ncontr": 471960
+  },
+  "platform": "macOS-14.8.4-arm64-arm-64bit",
+  "python": "3.11.17",
+  "repeats": 1,
+  "timing_scope": "Fresh process per sample. Includes complete coefficient dictionary generation; excludes interpreter startup/import, SQLite write, and exact comparison.",
+  "memory_scope": "Peak process RSS read after full dictionary generation and before SQLite output; includes interpreter imports and algorithm temporaries.",
+  "dictionary_key": "packed (colour_code, spin_code) -> exact integer coefficient",
+  "comparison_scope": "The local UCA-P1 direct reproduction is the full-dictionary reference. qcd colour-first and current fused outputs are compared row-by-row for every key and coefficient.",
+  "paper_unit_caveat": "Only UCA Nlist is the same complete coefficient-coordinate unit. Papers that report compressed tensor terms, recursive leaves, graph classes, or contraction plans do not have counts or runtimes directly comparable with this dictionary.",
+  "methods": [
+    {
+      "id": "uca_p1_direct",
+      "label": "UCA-P1 direct local reproduction",
+      "median_seconds": 16.380633916007355,
+      "min_seconds": 16.380633916007355,
+      "max_seconds": 16.380633916007355,
+      "peak_rss_mib_max": 992.75,
+      "entries": 3775680,
+      "dictionary_verification": {
+        "reference_entry_count_matches_expected": true,
+        "repeated_reference_runs_exactly_equal": false,
+        "repeat_comparisons": []
+      }
+    },
+    {
+      "id": "qcd_colour_first",
+      "label": "qcd colour-first local implementation",
+      "median_seconds": 12.031533458968624,
+      "min_seconds": 12.031533458968624,
+      "max_seconds": 12.031533458968624,
+      "peak_rss_mib_max": 1142.09375,
+      "entries": 3775680,
+      "dictionary_verification": {
+        "all_runs_exact_dictionary_equal": true,
+        "run_comparisons": [
+          {
+            "reference_entries": 3775680,
+            "candidate_entries": 3775680,
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "coefficient_mismatches": 0,
+            "exact_dictionary_equal": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "current_incidence_s3_fused",
+      "label": "current incidence + global-colour S3 fused method",
+      "median_seconds": 2.6967476659920067,
+      "min_seconds": 2.6967476659920067,
+      "max_seconds": 2.6967476659920067,
+      "peak_rss_mib_max": 827.796875,
+      "entries": 3775680,
+      "dictionary_verification": {
+        "all_runs_exact_dictionary_equal": true,
+        "run_comparisons": [
+          {
+            "reference_entries": 3775680,
+            "candidate_entries": 3775680,
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "coefficient_mismatches": 0,
+            "exact_dictionary_equal": true
+          }
+        ]
+      }
+    }
+  ],
+  "samples": {
+    "uca_p1_direct": [
+      {
+        "method": "uca_p1_direct",
+        "seconds": 16.380633916007355,
+        "peak_rss_mib": 992.75,
+        "entries": 3775680,
+        "details": {},
+        "python": "3.11.17",
+        "repetition": 1,
+        "verification": {
+          "role": "reference dictionary",
+          "entry_count_matches_expected": true
+        }
+      }
+    ],
+    "qcd_colour_first": [
+      {
+        "method": "qcd_colour_first",
+        "seconds": 12.031533458968624,
+        "peak_rss_mib": 1142.09375,
+        "entries": 3775680,
+        "details": {
+          "colour_buckets": 1680,
+          "output_conversion": "flatten exact colour buckets to UCA unified key"
+        },
+        "python": "3.11.17",
+        "repetition": 1,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      }
+    ],
+    "current_incidence_s3_fused": [
+      {
+        "method": "current_incidence_s3_fused",
+        "seconds": 2.6967476659920067,
+        "peak_rss_mib": 827.796875,
+        "entries": 3775680,
+        "details": {
+          "wick_maps": 2880,
+          "profile_keys": 1,
+          "endpoint_profiles": 1,
+          "transporter_generators": 0,
+          "transporter_orbits": 0,
+          "transporter_wicks_saved": 0,
+          "transporter_stabilizer_fallbacks": 0,
+          "transporter_auto_fallbacks": 1,
+          "route": "cross-time-fused",
+          "key_kind": "packed",
+          "fallback_reason": "transporter estimate below validation cost",
+          "orbit_cache_hits": 0,
+          "colour_orbit_enabled": true,
+          "incidence_keys": 180,
+          "fusion_kernel": "incidence-spin-s3",
+          "incidence_spin_pairs": 123480,
+          "exact_colour_codes": 1680,
+          "colour_orbits": 280,
+          "zero_stabilizer_orbits": 0,
+          "reconstructed_colour_codes": 1680,
+          "representative_incidence_checks": 6480,
+          "dictionary_entries": 3775680
+        },
+        "python": "3.11.17",
+        "repetition": 1,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      }
+    ]
+  }
+}

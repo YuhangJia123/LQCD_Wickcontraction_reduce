@@ -1,0 +1,21 @@
+{
+  "expected_contractions": 288,
+  "contractions": 288,
+  "output_shape": [
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4
+  ],
+  "status": "completed",
+  "report": "/private/tmp/ppnn_block_run/fixed_288_audit2/report.json",
+  "event": "run_finished",
+  "phase": "evaluate_fixed_block_sum",
+  "elapsed_seconds": 512.1295653340001,
+  "phase_elapsed_seconds": 211.2152479580002,
+  "max_rss_bytes": 13152583680
+}

@@ -1,0 +1,55 @@
+{
+  "batch_size": 2048,
+  "colour_orbits": [
+    {
+      "colour_code": 3320,
+      "nonzero_dirac_coordinates": 40320,
+      "orbit_size": 21600,
+      "weighted_nlist": 870912000
+    },
+    {
+      "colour_code": 3560,
+      "nonzero_dirac_coordinates": 20736,
+      "orbit_size": 1800,
+      "weighted_nlist": 37324800
+    },
+    {
+      "colour_code": 7748,
+      "nonzero_dirac_coordinates": 54784,
+      "orbit_size": 8100,
+      "weighted_nlist": 443750400
+    },
+    {
+      "colour_code": 7934,
+      "nonzero_dirac_coordinates": 13824,
+      "orbit_size": 1350,
+      "weighted_nlist": 18662400
+    },
+    {
+      "colour_code": 27134,
+      "nonzero_dirac_coordinates": 20736,
+      "orbit_size": 1800,
+      "weighted_nlist": 37324800
+    }
+  ],
+  "count_scope": "exact count only; no global coordinate dictionary was emitted",
+  "epsilon_incidence_classes": 8100,
+  "matches_paper_counts": true,
+  "method": "exact epsilon incidence support + S6(u)xS6(d)xS3(colour) orbit count",
+  "model": "4He = ppnn, standard source spin (0, 1, 1, 0)",
+  "ncontr": 87998400,
+  "nlist": 1407974400,
+  "paper_reference": {
+    "ncontr": 87998400,
+    "nlist": 1407974400
+  },
+  "peak_rss_mib": 193.5,
+  "possible_colour_coordinates": 34650,
+  "seconds": {
+    "colour_support_and_orbits": 0.4051267500035465,
+    "dirac_orbit_accumulation": 0.9363903750199825,
+    "wick_and_incidence": 3.0657236671540886
+  },
+  "validation_limit": "Count agreement does not establish entry-by-entry equality with the paper's full list.",
+  "wick_maps": 518400
+}

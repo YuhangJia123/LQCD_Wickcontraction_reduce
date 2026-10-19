@@ -1,0 +1,13 @@
+{
+  "example": "pn_omega_pi+",
+  "source": "wick_reducer.operator_model.operator_library",
+  "raw_wicks": 3456,
+  "raw_wick_enumeration_seconds": 0.01788033382035792,
+  "fused_attempt": {
+    "max_entries": 100000000,
+    "status": "bounded_memory_error",
+    "message": "coefficient dictionary exceeded max_entries; no full dictionary materialized"
+  },
+  "validation_scope": "raw Wick enumeration completed; full fused dictionary deferred because expected output exceeds bounded 100M entry safety cap",
+  "peak_rss_mib_raw_enumeration": 20.046875
+}

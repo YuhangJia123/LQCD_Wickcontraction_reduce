@@ -1,0 +1,477 @@
+{
+  "benchmark": "3H = p+n+n, relativistic C gamma5, source external spins (0,0,1)",
+  "fixture": {
+    "path": "report/data/benchmark_20261014/pnn_special_input_20261014.json",
+    "source_spins": [
+      0,
+      0,
+      1
+    ],
+    "wick_maps": 2880,
+    "expected_dictionary_entries": 3775680
+  },
+  "platform": "macOS-14.8.4-arm64-arm-64bit",
+  "python": "3.11.17",
+  "repeats": 3,
+  "timing_scope": "Fresh process per sample; complete in-memory coefficient dictionary construction. Includes colour-first flattening and the merged normal-special cross-time kernel, and recursive tensor expansion. Excludes process startup, preparation/imports, fixture loading, SQLite serialization, and exact comparison. Samples execute sequentially.",
+  "memory_scope": "Peak process RSS sampled immediately after complete dictionary generation, before SQLite output. Includes interpreter imports and algorithm temporaries.",
+  "thread_limits": "OMP/OpenBLAS/MKL/vecLib/NumExpr thread counts set to 1 for every worker",
+  "dictionary_key": "packed (colour_code, spin_code) -> exact integer coefficient",
+  "comparison_scope": "Every candidate's full dictionary is compared row-by-row against the first UCA direct dictionary, including later UCA samples. No float tolerance, hash-only check, sampling, or count-only equality is used.",
+  "recursive_method_scope": "Local canonical antisymmetric-tuple recursion plus full dictionary expansion; not the published gauge-field-dependent, sink-pruned Lambda operation list.",
+  "provenance": {
+    "source_sha256": {
+      "report/data/benchmark_20261014/pnn_special_input_20261014.json": "0ef1ce3970acc6bf369a3d5dba0c91ad60aa4580913a70012036641e14f88006",
+      "verify_code/benchmark_special_report.py": "cfde450e6db9395aba6c4b2fb6d8691643f2613b7b12a61ea8c26c47b6f17ddd",
+      "report/benchmarks/reference/uca_3h_reference.py": "f874fb6f776d17a598f72fc172addb9012efdbe372d1119541a07403322aff49",
+      "report/benchmarks/reference/recursive_3h_reference.py": "23c664fc3220dbd37285877b4a91ec807f41abe17b980e4f008862ab7b8107e1",
+      "kernels/wick_reducer/unified.py": "42c1b1ab7fc3f6fe629fe47d61656ab77769ea122fd06063a6246073ecba0677",
+      "kernels/wick_colour_orbit/__init__.py": "04a224e2ddcf10c4b458ff3aace3125fdffc3b73d4f7a62245522218ccb7bf25",
+      "kernels/wick_colour_orbit/cli.py": "eb0f45b496f9a893297604db192d49f157d5ab2b475d5549c58b5dad3b197e1d",
+      "kernels/wick_colour_orbit/cross_time.py": "74a68c5161d736233c292429f424d63d84c5a3e57d4ce92347451d022529d8f6",
+      "kernels/wick_colour_orbit/exact_operator_backend.py": "f5a69c2a420988b32328a280c76c3acb64ea70f24f2ebc104296e7bc65b6a61f",
+      "kernels/wick_colour_orbit/examples.py": "1db36318f59a6ed975b5047b8ee17136d359b9460f1d26a80c4955bf63f269df",
+      "kernels/wick_colour_orbit/fusion.py": "5f6e9570f8fc52d0dfbf7f3c59a31bae0fc9da3ba6ad25c09cd114e105f7b701",
+      "kernels/wick_colour_orbit/general.py": "259773d14247c3250dad369edc3643cd122eb281978b75197da441e005ae84ab",
+      "kernels/wick_colour_orbit/grouping.py": "b5bcd981da61d90336c14c37244636a86221a9c718ac3f7c038490f965b1e1c1",
+      "kernels/wick_colour_orbit/input_json.py": "cc13a0dbfab6f50013ef7ec3679f93ccef1f6e9960dcf78f3bdeb0ae90451dfc",
+      "kernels/wick_colour_orbit/model.py": "c622fde6c7e549039c2604e17276a7afcb20bf3b977bea8e9cdc58220146831b",
+      "kernels/wick_colour_orbit/output.py": "8d6592f4cf71c0f3e14269b9891c3164c0bc90d0d43b4fb832a1bd91397f7051",
+      "kernels/wick_colour_orbit/symmetry.py": "f127fa3da0f306f91061bd26a6a0b33efd05c894d7918708a92a83d49803d8ca",
+      "kernels/wick_colour_orbit/user_api.py": "edf0bc2d92d07b0da559b124dad639899b79b4bd9adde6a89a394cf5ef70ebc4",
+      "kernels/wick_colour_orbit/user_examples.py": "cae4effffde45c3d8eb3f58a9057fc77bf98c45497c1c9e95eac16b188f08f92"
+    },
+    "reference_snapshot_origin": {
+      "uca_3h_reference.py": "wick_colour_orbit_improve/report/benchmarks/reference/uca_p1/benchmark_3h_methods.py",
+      "recursive_3h_reference.py": "wick_colour_orbit_improve/report/benchmarks/recursive_3h_reference.py"
+    }
+  },
+  "complete": true,
+  "samples": {
+    "uca_p1_direct": [
+      {
+        "method": "uca_p1_direct",
+        "seconds": 33.537096707616,
+        "peak_rss_mib": 802.046875,
+        "entries": 3775680,
+        "details": {},
+        "python": "3.11.17",
+        "repetition": 1,
+        "verification": {
+          "role": "reference dictionary",
+          "entry_count_matches_expected": true
+        }
+      },
+      {
+        "method": "uca_p1_direct",
+        "seconds": 31.947848374955356,
+        "peak_rss_mib": 843.265625,
+        "entries": 3775680,
+        "details": {},
+        "python": "3.11.17",
+        "repetition": 2,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      },
+      {
+        "method": "uca_p1_direct",
+        "seconds": 32.019433457870036,
+        "peak_rss_mib": 818.890625,
+        "entries": 3775680,
+        "details": {},
+        "python": "3.11.17",
+        "repetition": 3,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      }
+    ],
+    "qcd_colour_first": [
+      {
+        "method": "qcd_colour_first",
+        "seconds": 25.548472667112947,
+        "peak_rss_mib": 814.03125,
+        "entries": 3775680,
+        "details": {
+          "colour_buckets": 1680
+        },
+        "python": "3.11.17",
+        "repetition": 1,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      },
+      {
+        "method": "qcd_colour_first",
+        "seconds": 26.74558391608298,
+        "peak_rss_mib": 824.796875,
+        "entries": 3775680,
+        "details": {
+          "colour_buckets": 1680
+        },
+        "python": "3.11.17",
+        "repetition": 2,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      },
+      {
+        "method": "qcd_colour_first",
+        "seconds": 24.722031458746642,
+        "peak_rss_mib": 874.15625,
+        "entries": 3775680,
+        "details": {
+          "colour_buckets": 1680
+        },
+        "python": "3.11.17",
+        "repetition": 3,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      }
+    ],
+    "merged_normal_special_independent": [
+      {
+        "method": "merged_normal_special_independent",
+        "seconds": 6.3372136247344315,
+        "peak_rss_mib": 709.78125,
+        "entries": 3775680,
+        "details": {
+          "wick_maps": 2880,
+          "profile_keys": 1,
+          "endpoint_profiles": 1,
+          "transporter_generators": 1,
+          "transporter_orbits": 1440,
+          "transporter_wicks_saved": 1440,
+          "transporter_stabilizer_fallbacks": 0,
+          "transporter_auto_fallbacks": 0,
+          "route": "cross-time-fused",
+          "key_kind": "packed",
+          "fallback_reason": null,
+          "orbit_cache_hits": 0,
+          "colour_orbit_enabled": true,
+          "incidence_keys": 180,
+          "fusion_kernel": "incidence-spin-s3",
+          "incidence_spin_pairs": 123480,
+          "exact_colour_codes": 1680,
+          "colour_orbits": 280,
+          "zero_stabilizer_orbits": 0,
+          "reconstructed_colour_codes": 1680,
+          "representative_incidence_checks": 6480,
+          "dictionary_entries": 3775680
+        },
+        "python": "3.11.17",
+        "repetition": 1,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      },
+      {
+        "method": "merged_normal_special_independent",
+        "seconds": 5.614458666648716,
+        "peak_rss_mib": 732.890625,
+        "entries": 3775680,
+        "details": {
+          "wick_maps": 2880,
+          "profile_keys": 1,
+          "endpoint_profiles": 1,
+          "transporter_generators": 1,
+          "transporter_orbits": 1440,
+          "transporter_wicks_saved": 1440,
+          "transporter_stabilizer_fallbacks": 0,
+          "transporter_auto_fallbacks": 0,
+          "route": "cross-time-fused",
+          "key_kind": "packed",
+          "fallback_reason": null,
+          "orbit_cache_hits": 0,
+          "colour_orbit_enabled": true,
+          "incidence_keys": 180,
+          "fusion_kernel": "incidence-spin-s3",
+          "incidence_spin_pairs": 123480,
+          "exact_colour_codes": 1680,
+          "colour_orbits": 280,
+          "zero_stabilizer_orbits": 0,
+          "reconstructed_colour_codes": 1680,
+          "representative_incidence_checks": 6480,
+          "dictionary_entries": 3775680
+        },
+        "python": "3.11.17",
+        "repetition": 2,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      },
+      {
+        "method": "merged_normal_special_independent",
+        "seconds": 5.749668083153665,
+        "peak_rss_mib": 739.609375,
+        "entries": 3775680,
+        "details": {
+          "wick_maps": 2880,
+          "profile_keys": 1,
+          "endpoint_profiles": 1,
+          "transporter_generators": 1,
+          "transporter_orbits": 1440,
+          "transporter_wicks_saved": 1440,
+          "transporter_stabilizer_fallbacks": 0,
+          "transporter_auto_fallbacks": 0,
+          "route": "cross-time-fused",
+          "key_kind": "packed",
+          "fallback_reason": null,
+          "orbit_cache_hits": 0,
+          "colour_orbit_enabled": true,
+          "incidence_keys": 180,
+          "fusion_kernel": "incidence-spin-s3",
+          "incidence_spin_pairs": 123480,
+          "exact_colour_codes": 1680,
+          "colour_orbits": 280,
+          "zero_stabilizer_orbits": 0,
+          "reconstructed_colour_codes": 1680,
+          "representative_incidence_checks": 6480,
+          "dictionary_entries": 3775680
+        },
+        "python": "3.11.17",
+        "repetition": 3,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      }
+    ],
+    "recursive_antisymmetric_product": [
+      {
+        "method": "recursive_antisymmetric_product",
+        "seconds": 21.292883083224297,
+        "peak_rss_mib": 273.328125,
+        "entries": 3775680,
+        "details": {
+          "flavor_order": [
+            "d",
+            "u"
+          ],
+          "intermediate_components": [
+            {
+              "vertex": "pbar",
+              "local_components": 21,
+              "recursive_components": 21
+            },
+            {
+              "vertex": "nbar_1",
+              "local_components": 21,
+              "recursive_components": 231
+            },
+            {
+              "vertex": "nbar_2",
+              "local_components": 21,
+              "recursive_components": 1311
+            }
+          ],
+          "candidate_updates": 5313,
+          "valid_updates": 2967,
+          "canonical_tensor_components": 1311
+        },
+        "python": "3.11.17",
+        "repetition": 1,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      },
+      {
+        "method": "recursive_antisymmetric_product",
+        "seconds": 22.88526170887053,
+        "peak_rss_mib": 270.28125,
+        "entries": 3775680,
+        "details": {
+          "flavor_order": [
+            "d",
+            "u"
+          ],
+          "intermediate_components": [
+            {
+              "vertex": "pbar",
+              "local_components": 21,
+              "recursive_components": 21
+            },
+            {
+              "vertex": "nbar_1",
+              "local_components": 21,
+              "recursive_components": 231
+            },
+            {
+              "vertex": "nbar_2",
+              "local_components": 21,
+              "recursive_components": 1311
+            }
+          ],
+          "candidate_updates": 5313,
+          "valid_updates": 2967,
+          "canonical_tensor_components": 1311
+        },
+        "python": "3.11.17",
+        "repetition": 2,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      },
+      {
+        "method": "recursive_antisymmetric_product",
+        "seconds": 22.691167917102575,
+        "peak_rss_mib": 264.578125,
+        "entries": 3775680,
+        "details": {
+          "flavor_order": [
+            "d",
+            "u"
+          ],
+          "intermediate_components": [
+            {
+              "vertex": "pbar",
+              "local_components": 21,
+              "recursive_components": 21
+            },
+            {
+              "vertex": "nbar_1",
+              "local_components": 21,
+              "recursive_components": 231
+            },
+            {
+              "vertex": "nbar_2",
+              "local_components": 21,
+              "recursive_components": 1311
+            }
+          ],
+          "candidate_updates": 5313,
+          "valid_updates": 2967,
+          "canonical_tensor_components": 1311
+        },
+        "python": "3.11.17",
+        "repetition": 3,
+        "verification": {
+          "reference_entries": 3775680,
+          "candidate_entries": 3775680,
+          "missing_keys": 0,
+          "extra_keys": 0,
+          "coefficient_mismatches": 0,
+          "exact_dictionary_equal": true
+        }
+      }
+    ]
+  },
+  "all_dictionary_checks_passed": true,
+  "methods": [
+    {
+      "id": "uca_p1_direct",
+      "label": "UCA-P1 direct local reproduction",
+      "repeats": 3,
+      "median_seconds": 32.019433457870036,
+      "min_seconds": 31.947848374955356,
+      "max_seconds": 33.537096707616,
+      "peak_rss_mib_max": 843.265625,
+      "entries": 3775680,
+      "dictionary_verification": {
+        "complete_dictionary": true,
+        "exact_comparisons": 2,
+        "all_compared_runs_exactly_equal": true,
+        "role": "reference plus repeated-reference checks"
+      }
+    },
+    {
+      "id": "qcd_colour_first",
+      "label": "qcd colour-first local implementation",
+      "repeats": 3,
+      "median_seconds": 25.548472667112947,
+      "min_seconds": 24.722031458746642,
+      "max_seconds": 26.74558391608298,
+      "peak_rss_mib_max": 874.15625,
+      "entries": 3775680,
+      "dictionary_verification": {
+        "complete_dictionary": true,
+        "exact_comparisons": 3,
+        "all_compared_runs_exactly_equal": true,
+        "role": "candidate"
+      }
+    },
+    {
+      "id": "merged_normal_special_independent",
+      "label": "This project normal-special-independent",
+      "repeats": 3,
+      "median_seconds": 5.749668083153665,
+      "min_seconds": 5.614458666648716,
+      "max_seconds": 6.3372136247344315,
+      "peak_rss_mib_max": 739.609375,
+      "entries": 3775680,
+      "dictionary_verification": {
+        "complete_dictionary": true,
+        "exact_comparisons": 3,
+        "all_compared_runs_exactly_equal": true,
+        "role": "candidate"
+      }
+    },
+    {
+      "id": "recursive_antisymmetric_product",
+      "label": "Local sparse antisymmetric-product recursion",
+      "repeats": 3,
+      "median_seconds": 22.691167917102575,
+      "min_seconds": 21.292883083224297,
+      "max_seconds": 22.88526170887053,
+      "peak_rss_mib_max": 273.328125,
+      "entries": 3775680,
+      "dictionary_verification": {
+        "complete_dictionary": true,
+        "exact_comparisons": 3,
+        "all_compared_runs_exactly_equal": true,
+        "role": "candidate"
+      }
+    }
+  ]
+}

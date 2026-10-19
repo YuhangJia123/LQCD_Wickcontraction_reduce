@@ -1,0 +1,170 @@
+{
+  "metadata": {
+    "contract_sample": 8,
+    "cwd": ".",
+    "memory_measurement": "resource.ru_maxrss; RSS is process peak (macOS bytes)",
+    "platform": "macOS-14.8.4-arm64-arm-64bit",
+    "production_ppnn_mode": "historical",
+    "python": "3.9.6 (default, Feb  3 2024, 15:58:27) \n[Clang 15.0.0 (clang-1500.3.9.4)]",
+    "seed": 20261009
+  },
+  "systems": {
+    "ppn": {
+      "contract_sample": {
+        "contract_seconds": 0.03044849999999988,
+        "estimated_seconds_for_fused_block_calls": 0.3539638124999986,
+        "estimated_seconds_for_state_block_calls": 2.8317104999999887,
+        "family": "ppn",
+        "note": "estimates multiply a sample mean; they are not a full ppnn run",
+        "sample_calls": 8,
+        "sample_output_shapes": [
+          [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ]
+        ],
+        "seconds_per_contract": 0.003806062499999985,
+        "seed": 20261009
+      },
+      "production_reducer": {
+        "family": "ppn",
+        "label": "production reducer ppn independent",
+        "measured_in_this_run": true,
+        "mode": "independent",
+        "process_peak_rss_bytes": 34504704,
+        "production_basis_count": 698,
+        "production_dependent_count": 2182,
+        "python_tracemalloc_peak_bytes": null,
+        "raw_wick_count": 2880,
+        "reducer_timing_seconds": {
+          "peram_bucket": 0.393497666,
+          "total": 2.640699958,
+          "transporter_sink_source": 2.2465652499999997
+        },
+        "wall_seconds": 2.643284583
+      },
+      "orbit_audit": {
+        "family": "ppn",
+        "fused_block_calls_if_certified": 93,
+        "internal_exchange_group_order": 8,
+        "label": "verify_code orbit ppn",
+        "measured_in_this_run": true,
+        "orbit_count": 93,
+        "process_peak_rss_bytes": 36143104,
+        "python_tracemalloc_peak_bytes": null,
+        "raw_orbit_size_histogram": {
+          "16": 6,
+          "32": 87
+        },
+        "raw_wick_count": 2880,
+        "state_block_contract_calls": 744,
+        "state_count": 360,
+        "state_orbit_size_histogram": {
+          "2": 6,
+          "4": 87
+        },
+        "wall_seconds": 0.3287290829999998
+      }
+    },
+    "ppnn": {
+      "contract_sample": {
+        "contract_seconds": 0.04507995899999173,
+        "estimated_seconds_for_fused_block_calls": 6.018174526498896,
+        "estimated_seconds_for_state_block_calls": 96.29079242398234,
+        "family": "ppnn",
+        "note": "estimates multiply a sample mean; they are not a full ppnn run",
+        "sample_calls": 8,
+        "sample_output_shapes": [
+          [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ]
+        ],
+        "seconds_per_contract": 0.0056349948749989665,
+        "seed": 20261009
+      },
+      "production_reducer": {
+        "measured_in_this_run": false,
+        "mode": "independent",
+        "peak_memory_bytes": 1299227607,
+        "production_basis_count": 31092,
+        "production_dependent_count": 487308,
+        "raw_wick_count": 518400,
+        "source": "docs/reference/wick-api.md historical ppnn row",
+        "wall_seconds": 539.4
+      },
+      "orbit_audit": {
+        "family": "ppnn",
+        "fused_block_calls_if_certified": 1068,
+        "internal_exchange_group_order": 16,
+        "label": "verify_code orbit ppnn",
+        "measured_in_this_run": true,
+        "orbit_count": 1068,
+        "process_peak_rss_bytes": 659734528,
+        "python_tracemalloc_peak_bytes": null,
+        "raw_orbit_size_histogram": {
+          "64": 4,
+          "128": 14,
+          "256": 83,
+          "512": 967
+        },
+        "raw_wick_count": 518400,
+        "state_block_contract_calls": 17088,
+        "state_count": 32400,
+        "state_orbit_size_histogram": {
+          "4": 4,
+          "8": 14,
+          "16": 83,
+          "32": 967
+        },
+        "wall_seconds": 97.502133583
+      }
+    }
+  }
+}

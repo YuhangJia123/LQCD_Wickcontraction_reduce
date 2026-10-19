@@ -1,0 +1,29 @@
+{
+  "input": "normal",
+  "mode": "special",
+  "output": "independent",
+  "name": "pion",
+  "wick_scope": "complete",
+  "operators": [
+    [
+      {
+        "side": "sink",
+        "kind": "meson",
+        "species": "pi0_uubar",
+        "label": "sink_pi",
+        "flavors": ["u", "u"],
+        "gamma": "gamma5"
+      }
+    ],
+    [
+      {
+        "side": "source",
+        "kind": "meson",
+        "species": "pi0_uubar",
+        "label": "source_pi",
+        "flavors": ["u", "u"],
+        "gamma": "gamma5"
+      }
+    ]
+  ]
+}

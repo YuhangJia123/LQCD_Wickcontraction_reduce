@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wick-diss-reduce"
+version = "0.1.0"
+description = "Wick-contraction reduction and verification for distillation and normal correlators"
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+numeric = ["numpy>=1.23", "opt-einsum>=3.3"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["kernels", "kernels.*", "verify_code", "verify_code.*"]
