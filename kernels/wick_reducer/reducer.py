@@ -1260,6 +1260,10 @@ def _reduce_bucket(
     relation_term_callback: Optional[
         Callable[[Mapping[str, object], TransportState, Sequence[BasisState], core.WickTerm], None]
     ] = None,
+    basis_callback: Optional[
+        Callable[[int, core.WickTerm, TransportState, complex, Sequence[core.Operator],
+                 Sequence[core.Field], Sequence[core.Field], Sequence[core.Field]], None]
+    ] = None,
 ) -> Tuple[List[Dict[str, object]], List[Dict[str, object]], List[Dict[str, object]]]:
     families: List[PeramFamily] = []
     independent: List[Dict[str, object]] = []
@@ -1550,6 +1554,11 @@ def _reduce_bucket(
             for entry in sink_class.basis:
                 entry.aggregate = complex(entry.aggregate)
                 aggregate_by_wick[entry.wick_index] = entry.state.coefficient * entry.aggregate
+                if basis_callback is not None:
+                    basis_callback(
+                        entry.wick_index, basis_terms[entry.wick_index], entry.state,
+                        entry.aggregate, operators, fields, quarks, antiquarks,
+                    )
     for item in independent:
         wick_index = int(item["wick_index"])
         coefficient = aggregate_by_wick.get(wick_index, complex(item["coefficient"][0], item["coefficient"][1]))
@@ -1572,9 +1581,14 @@ def reduce_case(
     block: bool = False,
     output_path: Optional[str | Path] = None,
     block_options: Optional[Mapping[str, object]] = None,
+    _precomputed_wicks: Optional[Sequence[core.WickTerm]] = None,
     _relation_callback: Optional[Callable[[Mapping[str, object], TransportState, Sequence[BasisState]], None]] = None,
     _relation_term_callback: Optional[
         Callable[[Mapping[str, object], TransportState, Sequence[BasisState], core.WickTerm], None]
+    ] = None,
+    _basis_callback: Optional[
+        Callable[[int, core.WickTerm, TransportState, complex, Sequence[core.Operator],
+                 Sequence[core.Field], Sequence[core.Field], Sequence[core.Field]], None]
     ] = None,
 ) -> Dict[str, object]:
     if options is not None:
@@ -1613,11 +1627,15 @@ def reduce_case(
     q_flavors = tuple(
         model.flavor_class(field.flavor, isospin_degenerate) for field in quarks
     )
+    precomputed_wicks = None if _precomputed_wicks is None else tuple(_precomputed_wicks)
     if mode == "coarse":
         profiles = Counter()
         signs = Counter()
         count = 0
-        for index, term in enumerate(core.enumerate_wicks(quarks, antiquarks), start=1):
+        wick_iter = precomputed_wicks
+        if wick_iter is None:
+            wick_iter = core.enumerate_wicks(quarks, antiquarks)
+        for index, term in enumerate(wick_iter, start=1):
             if max_wicks is not None and index > max_wicks:
                 break
             profile, _peram_counts, _routing = model.profile(
@@ -1670,7 +1688,10 @@ def reduce_case(
     pairing_width = _pairing_width(len(antiquarks))
     operator_map_width = _pairing_width(len(operators))
     buckets: Dict[Tuple, CompactWickBucket] = {}
-    for wick_index, term in enumerate(core.enumerate_wicks(quarks, antiquarks), start=1):
+    wick_iter = precomputed_wicks
+    if wick_iter is None:
+        wick_iter = core.enumerate_wicks(quarks, antiquarks)
+    for wick_index, term in enumerate(wick_iter, start=1):
         if max_wicks is not None and wick_index > max_wicks:
             break
         profile, _counts, _routing = model.profile(
@@ -1728,6 +1749,7 @@ def reduce_case(
             counters=counters,
             relation_callback=_relation_callback,
             relation_term_callback=_relation_term_callback,
+            basis_callback=_basis_callback,
         )
         independent_wicks.extend(independent)
         if mode == "detailed":
@@ -1782,9 +1804,14 @@ def reduce_operators(
     block: bool = False,
     output_path: Optional[str | Path] = None,
     block_options: Optional[Mapping[str, object]] = None,
+    _precomputed_wicks: Optional[Sequence[core.WickTerm]] = None,
     _relation_callback: Optional[Callable[[Mapping[str, object], TransportState, Sequence[BasisState]], None]] = None,
     _relation_term_callback: Optional[
         Callable[[Mapping[str, object], TransportState, Sequence[BasisState], core.WickTerm], None]
+    ] = None,
+    _basis_callback: Optional[
+        Callable[[int, core.WickTerm, TransportState, complex, Sequence[core.Operator],
+                 Sequence[core.Field], Sequence[core.Field], Sequence[core.Field]], None]
     ] = None,
 ) -> Dict[str, object]:
     """Reduce arbitrary operators without a built-in correlator name.
@@ -1807,8 +1834,10 @@ def reduce_operators(
         block=block,
         output_path=output_path,
         block_options=block_options,
+        _precomputed_wicks=_precomputed_wicks,
         _relation_callback=_relation_callback,
         _relation_term_callback=_relation_term_callback,
+        _basis_callback=_basis_callback,
     )
 
 
