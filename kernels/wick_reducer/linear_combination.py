@@ -215,36 +215,9 @@ class OperatorLinearCombination:
         return tuple(sorted(result, key=lambda term: repr(term.operators)))
 
 
-@dataclass(frozen=True)
-class SourceLinearCombination:
-    combination: OperatorLinearCombination
-    def __post_init__(self) -> None:
-        if self.combination.side != "source":
-            raise ValueError("source combination must contain source-side operators")
-
-
-@dataclass(frozen=True)
-class SinkOperator:
-    name: str
-    combination: OperatorLinearCombination
-    def __post_init__(self) -> None:
-        if self.combination.side != "sink":
-            raise ValueError("sink operator must contain sink-side operators")
-
-
-@dataclass(frozen=True)
-class CorrelatorCombination:
-    sinks: Tuple[SinkOperator, ...]
-    source: SourceLinearCombination
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "sinks", tuple(self.sinks))
-        if not self.sinks or len({sink.name for sink in self.sinks}) != len(self.sinks):
-            raise ValueError("need uniquely named sink channels")
-
-
 def lift_legacy_operators(operators: Sequence[core.Operator],
-                           label: str = "correlator") -> CorrelatorCombination:
-    """Lift the legacy single correlator input to one unit-weight term per side."""
+                           label: str = "correlator") -> tuple[OperatorLinearCombination, OperatorLinearCombination]:
+    """Lift the legacy correlator to unit-weight sink and source combinations."""
     if len(operators) == 2 and all(isinstance(side, (tuple, list)) for side in operators):
         operators = tuple(operator for side in operators for operator in side)
     else:
@@ -253,13 +226,13 @@ def lift_legacy_operators(operators: Sequence[core.Operator],
     source_ops = tuple(operator for operator in operators if operator.side == "source")
     if not sink_ops or not source_ops:
         raise ValueError("legacy correlator must contain sink and source operators")
-    return CorrelatorCombination(
-        (SinkOperator(label, OperatorLinearCombination((
+    return (
+        OperatorLinearCombination((
             OperatorProductTerm(sink_ops, ExactScalar.rational(1), f"{label}:sink"),
-        ))),),
-        SourceLinearCombination(OperatorLinearCombination((
+        )),
+        OperatorLinearCombination((
             OperatorProductTerm(source_ops, ExactScalar.rational(1), f"{label}:source"),
-        ))),
+        )),
     )
 
 
@@ -269,8 +242,10 @@ def _complex_pair(value: complex) -> list[float]:
 
 
 def reduce_linear_combination(
-    request: CorrelatorCombination,
+    sink_combination: OperatorLinearCombination,
+    source_combination: OperatorLinearCombination,
     *,
+    sink_name: str = "correlator",
     options: Optional[wick_reducer.ReductionOptions] = None,
     gamma_matrices: Optional[Mapping[str, core.Matrix]] = None,
     tolerance: float = wick_reducer.TOLERANCE,
@@ -285,13 +260,21 @@ def reduce_linear_combination(
     are floating-point.  ``tolerance`` controls only the reported
     zero-within-tolerance flag, not the legacy reducer's fixed rank tolerance.
     """
-    if not isinstance(request, CorrelatorCombination):
-        raise TypeError("request must be a CorrelatorCombination")
+    if not isinstance(sink_combination, OperatorLinearCombination):
+        raise TypeError("sink_combination must be an OperatorLinearCombination")
+    if not isinstance(source_combination, OperatorLinearCombination):
+        raise TypeError("source_combination must be an OperatorLinearCombination")
+    if sink_combination.side != "sink":
+        raise ValueError("sink_combination must contain sink-side operators")
+    if source_combination.side != "source":
+        raise ValueError("source_combination must contain source-side operators")
+    if not isinstance(sink_name, str) or not sink_name:
+        raise ValueError("sink_name must be a nonempty string")
     if tolerance < 0 or not math.isfinite(float(tolerance)):
         raise ValueError("tolerance must be finite and nonnegative")
     isospin = True if options is None else options.isospin_degenerate
-    source_terms = request.source.combination.premerged()
-    sink_terms = {sink.name: sink.combination.premerged() for sink in request.sinks}
+    source_terms = source_combination.premerged()
+    sink_terms = sink_combination.premerged()
     batches: dict[Any, dict[str, Any]] = {}
     components = []
     started = time.perf_counter()
@@ -304,58 +287,57 @@ def reduce_linear_combination(
                 core.operator_factor_tag(operator), core.operator_factor_metadata(operator),
                 operator.mode, operator_endpoint(operator))
 
-    for sink in request.sinks:
-        for sink_term in sink_terms[sink.name]:
-            for source_term in source_terms:
-                operators = sink_term.operators + source_term.operators
-                # The sink is the requested operator, while the source enters
-                # through its adjoint.  Only the source coefficient is
-                # conjugated by that adjoint operation.
-                exact_weight = sink_term.coefficient * source_term.coefficient.conjugate()
-                fields, quarks, antiquarks = core._fields(operators)
-                raw_terms = tuple(core.enumerate_wicks(quarks, antiquarks))
-                component = {
-                    "sink": sink.name,
-                    "sink_source_label": sink_term.source_label,
+    for sink_term in sink_terms:
+        for source_term in source_terms:
+            operators = sink_term.operators + source_term.operators
+            # The source enters through its adjoint, so conjugate only its
+            # coefficient here. Its field order and Gamma are supplied by
+            # the source Operator definitions.
+            exact_weight = sink_term.coefficient * source_term.coefficient.conjugate()
+            fields, quarks, antiquarks = core._fields(operators)
+            raw_terms = tuple(core.enumerate_wicks(quarks, antiquarks))
+            component = {
+                "sink": sink_name,
+                "sink_source_label": sink_term.source_label,
+                "source_label": source_term.source_label,
+                "sink_input_coefficient": sink_term.coefficient.to_json(),
+                "source_input_coefficient": source_term.coefficient.to_json(),
+                "adjointed_source_coefficient": source_term.coefficient.conjugate().to_json(),
+                "exact_product_weight": exact_weight.to_json(),
+                "raw_wicks": [
+                    {"local_wick_index": index, **wick_reducer._record_for_term(
+                        index, term, fields, quarks, antiquarks,
+                    )}
+                    for index, term in enumerate(raw_terms, start=1)
+                ],
+                "wick_count": len(raw_terms),
+            }
+            components.append(component)
+            if not raw_terms or not exact_weight:
+                continue
+            key = tuple(topology(operator) for operator in operators)
+            batch = batches.get(key)
+            if batch is None:
+                normalized = tuple(replace(
+                    operator,
+                    flavors=tuple("ud" if isospin and flavor.lower() in ("u", "d") else flavor
+                                  for flavor in operator.flavors),
+                ) for operator in operators)
+                batch = {"operators": normalized, "terms": [], "origins": []}
+                batches[key] = batch
+            for local_index, term in enumerate(raw_terms, start=1):
+                global_index = len(batch["terms"]) + 1
+                batch["terms"].append(term)
+                batch["origins"].append({
+                    "global_wick_index": global_index,
+                    "component_index": len(components) - 1,
+                    "sink": sink_name,
+                    "sink_term_label": sink_term.source_label,
                     "source_label": source_term.source_label,
-                    "sink_input_coefficient": sink_term.coefficient.to_json(),
-                    "source_input_coefficient": source_term.coefficient.to_json(),
-                    "adjointed_source_coefficient": source_term.coefficient.conjugate().to_json(),
-                    "exact_product_weight": exact_weight.to_json(),
-                    "raw_wicks": [
-                        {"local_wick_index": index, **wick_reducer._record_for_term(
-                            index, term, fields, quarks, antiquarks,
-                        )}
-                        for index, term in enumerate(raw_terms, start=1)
-                    ],
-                    "wick_count": len(raw_terms),
-                }
-                components.append(component)
-                if not raw_terms or not exact_weight:
-                    continue
-                key = tuple(topology(operator) for operator in operators)
-                batch = batches.get(key)
-                if batch is None:
-                    normalized = tuple(replace(
-                        operator,
-                        flavors=tuple("ud" if isospin and flavor.lower() in ("u", "d") else flavor
-                                      for flavor in operator.flavors),
-                    ) for operator in operators)
-                    batch = {"operators": normalized, "terms": [], "origins": []}
-                    batches[key] = batch
-                for local_index, term in enumerate(raw_terms, start=1):
-                    global_index = len(batch["terms"]) + 1
-                    batch["terms"].append(term)
-                    batch["origins"].append({
-                        "global_wick_index": global_index,
-                        "component_index": len(components) - 1,
-                        "sink": sink.name,
-                        "sink_term_label": sink_term.source_label,
-                        "source_label": source_term.source_label,
-                        "exact_weight": exact_weight,
-                        "term": term,
-                        "local_wick_index": local_index,
-                    })
+                    "exact_weight": exact_weight,
+                    "term": term,
+                    "local_wick_index": local_index,
+                })
 
     basis_records: list[dict[str, Any]] = []
     trace_by_wick: dict[tuple[int, int], dict[str, Any]] = {}
@@ -454,20 +436,19 @@ def reduce_linear_combination(
     public_basis = []
     for basis in basis_records:
         rows = {}
-        for sink in request.sinks:
-            row = basis["rows"].get(sink.name, {
-                "numeric": 0j, "terms": [], "exact": ExactScalar.rational(0),
-                "exact_safe": True,
-            })
-            value = row["numeric"]
-            exact_value = row["exact"] if row["exact_safe"] else None
-            rows[sink.name] = {
-                "numeric": _complex_pair(value),
-                "zero_within_tolerance": abs(value) <= tolerance,
-                "exact_coefficient": exact_value.to_json() if exact_value is not None else None,
-                "exact_zero": (not bool(exact_value)) if exact_value is not None else None,
-                "coefficient_terms": row["terms"],
-            }
+        row = basis["rows"].get(sink_name, {
+            "numeric": 0j, "terms": [], "exact": ExactScalar.rational(0),
+            "exact_safe": True,
+        })
+        value = row["numeric"]
+        exact_value = row["exact"] if row["exact_safe"] else None
+        rows[sink_name] = {
+            "numeric": _complex_pair(value),
+            "zero_within_tolerance": abs(value) <= tolerance,
+            "exact_coefficient": exact_value.to_json() if exact_value is not None else None,
+            "exact_zero": (not bool(exact_value)) if exact_value is not None else None,
+            "coefficient_terms": row["terms"],
+        }
         public_basis.append({key: value for key, value in basis.items() if key != "rows"} | {"rows": rows})
 
     return {
@@ -475,7 +456,8 @@ def reduce_linear_combination(
         "shared_basis_within_batch": True,
         "shared_dirac_cache_within_batch": True,
         "output_emitted_after_batch": True,
-        "sink_names": [sink.name for sink in request.sinks],
+        "sink_name": sink_name,
+        "sink_names": [sink_name],
         "source_terms": [{"source_label": term.source_label,
                            "coefficient": term.coefficient.to_json(),
                            "operator_count": len(term.operators)} for term in source_terms],
@@ -576,8 +558,14 @@ def _add_wick_trace(trace_by_wick: dict, item: dict[str, Any], *mapping,
 def operator_endpoint(operator: core.Operator):
     return core.operator_endpoint_descriptor(operator)
 
-def make_sigma_lambda_example(mode: str = "distillation") -> CorrelatorCombination:
-    """Build separate Lambda1 p and Lambda2 p sinks with the exact Sigma-N source."""
+def make_sigma_lambda_example(
+    sink_name: str = "Lambda1p", mode: str = "distillation",
+) -> tuple[OperatorLinearCombination, OperatorLinearCombination]:
+    """Build one Lambda-p sink combination and the common exact Sigma-N source.
+
+    ``sink_name`` selects the single sink channel to calculate. Lambda1p and
+    Lambda2p are intentionally separate calls in this input layer.
+    """
     def baryon(side: str, species: str, label: str, flavors: Sequence[str]) -> core.Operator:
         gamma = "Cgamma5_dagger" if side == "source" else "Cgamma5"
         return operator_model.make_operator(
@@ -600,7 +588,7 @@ def make_sigma_lambda_example(mode: str = "distillation") -> CorrelatorCombinati
     p_bar = baryon("source", "pbar", "source_pbar", ("u", "d", "u"))
     n_bar = baryon("source", "nbar", "source_nbar", ("d", "u", "d"))
 
-    source = SourceLinearCombination(OperatorLinearCombination((
+    source = OperatorLinearCombination((
         OperatorProductTerm((p_bar, sigma0_dus_bar), root, "Sigma0_raw:d(u^T Cgamma5 s) p"),
         OperatorProductTerm((p_bar, sigma0_uds_bar), root, "Sigma0_raw:u(d^T Cgamma5 s) p"),
         # With the project's raw nucleon convention B(u,u,d)=p and
@@ -608,13 +596,17 @@ def make_sigma_lambda_example(mode: str = "distillation") -> CorrelatorCombinati
         # I_+ n_raw = -p_raw.  Thus the Condon-Shortley physical neutron is
         # -n_raw, and the physical plus-CG ket carries a minus on this raw term.
         OperatorProductTerm((n_bar, sigma_plus_bar), -root, "Sigma_plus n (raw n phase -1)"),
-    )))
-    sink1 = SinkOperator("Lambda1p", OperatorLinearCombination((
+    ))
+    sink1 = OperatorLinearCombination((
         OperatorProductTerm((lambda1, sink_p), ExactScalar.rational(1), "Lambda1 p"),
-    )))
-    sink2 = SinkOperator("Lambda2p", OperatorLinearCombination((
+    ))
+    sink2 = OperatorLinearCombination((
         OperatorProductTerm((lambda2_first, sink_p), ExactScalar.rational(1), "+ d(u^T Cgamma5 s) p"),
         OperatorProductTerm((lambda2_second, sink_p), ExactScalar.rational(-1), "- u(d^T Cgamma5 s) p"),
-    )))
-    return CorrelatorCombination((sink1, sink2), source)
+    ))
+    if sink_name == "Lambda1p":
+        return sink1, source
+    if sink_name == "Lambda2p":
+        return sink2, source
+    raise ValueError("sink_name must be 'Lambda1p' or 'Lambda2p'")
 

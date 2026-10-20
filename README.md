@@ -50,7 +50,7 @@ operators = [sink 算符列表, source 算符列表]
 | 算符字段 | 含义 |
 | --- | --- |
 | `kind` | `meson` 或 `baryon`。 |
-| `species`、`label` | 粒子类别与本次输入的实例标签；名字不是专用算法开关。 |
+| `species`、`label` | 自定义算符类别及可选的诊断标签；省略 `label` 时由输入层生成内部标签。 `species` 不是专用算法开关。 |
 | `flavors` | 重子：三个有序夸克味道；介子：`[反夸克味道, 夸克味道]`，单个味道表示对角介子。 |
 | `gamma`、`gamma_slots` | Gamma 名称及其两个有序槽位；source 的 dagger 和场槽顺序要显式指定。 |
 | `open_slot` | 重子的开放自旋槽，默认 0；默认 Gamma 连接其余两槽。 |
@@ -70,30 +70,65 @@ operators = [sink 算符列表, source 算符列表]
 
 ## 精确算符线性组合
 
-`kernels.wick_reducer` 提供 `reduce_linear_combination`，用于带精确系数的 source 态和多个独立 sink channel。一个乘积项由 `OperatorProductTerm` 表示，包含有序算符、精确系数和来源标签；`OperatorLinearCombination` 表示同一侧的项，`SourceLinearCombination` 表示 source，`SinkOperator` 表示一个单独计算的 sink。旧的 `reduce_operators()` 输入保持不变，也可以用 `lift_legacy_operators()` 转成系数为 1 的单项组合。
+输入层只保留四步：
 
-线性组合先展开每个 sink/source 乘积并枚举其味道允许的 Wick 配对，再按兼容的算符拓扑把展开项组成批次。每个批次只调用一次原有 Wick reducer，因此批内的 basis、transporter families 和 Dirac/peram 缓存会保留到下一项，批次完成后才输出结果。不同拓扑批次不会直接拼接局部 basis ID；结果中的编号只在本次输出中有效。
+```text
+原子 Operator
+    ↓
+OperatorProductTerm()
+    ↓
+OperatorLinearCombination(terms=(...))
+    ↓
+一个 sink combination + 一个 source combination
+```
+
+`OperatorProductTerm` 是一个有序算符乘积，带精确系数和来源标签；`OperatorLinearCombination` 是同一侧的项集合。第四步直接调用
+`reduce_linear_combination(sink_combination, source_combination)`，一次只计算一个 sink。旧的
+`reduce_operators(operators, ...)` 仍保持不变；`lift_legacy_operators(operators)` 返回 sink/source 两个系数为 1 的组合，可直接传给新入口。
+
+### pp：一个原子算符在乘积中出现两次
+
+先构造一个 sink 质子和一个 source 质子。`label` 是内部诊断字段，可以省略；`flavors` 仍然必填。
 
 ```python
 from kernels.wick_reducer import (
-    OperatorProductTerm, OperatorLinearCombination,
-    SourceLinearCombination, SinkOperator, CorrelatorCombination,
+    make_operator, OperatorProductTerm, OperatorLinearCombination,
     reduce_linear_combination,
 )
 
-request = CorrelatorCombination(
-    sinks=(SinkOperator("sink-A", OperatorLinearCombination((
-        OperatorProductTerm((sink_operator,), 1, "sink term A"),
-    ))),),
-    source=SourceLinearCombination(OperatorLinearCombination((
-        OperatorProductTerm((source_term_1,), "sqrt(1/3)", "source term 1"),
-        OperatorProductTerm((source_term_2,), "sqrt(1/3)", "source term 2"),
-    ))),
+# 1. 原子 Operator
+p_sink = make_operator(
+    side="sink", kind="baryon", species="p",
+    flavors=("u", "u", "d"), gamma="Cgamma5",
+    gamma_slots=(1, 2), open_slot=0,
 )
-result = reduce_linear_combination(request)
+p_source = make_operator(
+    side="source", kind="baryon", species="p",
+    flavors=("u", "d", "u"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+
+# 2. OperatorProductTerm；同一个对象重复两次表示 pp
+pp_sink_term = OperatorProductTerm(
+    operators=(p_sink, p_sink), coefficient="1", source_label="pp sink",
+)
+pp_source_term = OperatorProductTerm(
+    operators=(p_source, p_source), coefficient="1", source_label="pp source",
+)
+
+# 3. 两个 OperatorLinearCombination
+sink_combination = OperatorLinearCombination(terms=(pp_sink_term,))
+source_combination = OperatorLinearCombination(terms=(pp_source_term,))
+
+# 4. 一个 sink combination + 一个 source combination
+result = reduce_linear_combination(
+    sink_combination, source_combination, sink_name="pp",
+)
 ```
 
-source 通过伴随进入关联函数时，输入系数按现有约定取复共轭；当前 `ExactScalar` 支持有理数和平方根的精确实数表达式。运行 `python -m unittest tests.test_linear_combination` 可检查精确系数、分配律、项重排、预合并、旧 API 兼容和 Lambda-p 验证例。
+同一个 `Operator` 在 `(p_sink, p_sink)` 中出现两次时，内核按两个因子位置生成场和 Wick 配对，不会去重。当前 pp 输入产生 48 个原始 Wick 项和 15 个结果基底。
+
+多项组合、pipi、pn 以及分别运行的 Lambda1p/Lambda2p 示例见 [Quickstart 的 Python 线性组合输入](QUICKSTART.md#python-线性组合输入)和[精确组合接口参考](docs/reference/linear-combinations.md)。source 通过伴随进入关联函数时，输入系数按现有约定取复共轭；source 场顺序、Gamma dagger 和费米子重排仍由原子 `Operator` 定义负责。运行 `python -m unittest tests.test_linear_combination` 可检查精确系数、分配律、项重排、预合并、旧 API 兼容、pp 和两个单独的 Lambda-p 例子。
 
 ## 环境与安装
 

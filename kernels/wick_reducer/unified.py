@@ -135,7 +135,7 @@ def _make_operator(record: Mapping[str, Any], side: str, mode: str, index: int):
     declared_side = record.get("side", side)
     if declared_side != side:
         raise ValueError(f"operators[{side}][{index}].side must be {side!r}")
-    required = ("kind", "species", "label", "flavors")
+    required = ("kind", "species", "flavors")
     missing = [key for key in required if key not in record]
     if missing:
         raise ValueError(f"operator is missing required fields: {', '.join(missing)}")
@@ -144,6 +144,7 @@ def _make_operator(record: Mapping[str, Any], side: str, mode: str, index: int):
     # accepted only when it agrees, avoiding silently mixed correlators.
     if requested_mode != mode:
         raise ValueError("all operator modes must match top-level input")
+    label = record.get("label", f"{side}_{record['species']}_{index}")
     flavors = record["flavors"]
     if not isinstance(flavors, list):
         flavors = list(flavors)
@@ -159,7 +160,7 @@ def _make_operator(record: Mapping[str, Any], side: str, mode: str, index: int):
         "external_spin": record.get("external_spin"),
     }
     return operator_model.make_operator(
-        side, str(record["kind"]), str(record["species"]), str(record["label"]),
+        side, str(record["kind"]), str(record["species"]), str(label),
         flavors, record.get("gamma", "") or "", record.get("gamma_slots"),
         record.get("open_slot", operator_model._DEFAULT_OPEN_SLOT), **kwargs,
     )

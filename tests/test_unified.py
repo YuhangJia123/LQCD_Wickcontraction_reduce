@@ -52,6 +52,24 @@ class UnifiedFacadeTests(unittest.TestCase):
         report = run_unified(special, [[sink], [source]])
         self.assertEqual(report["check"]["status"], "passed")
 
+    def test_json_label_is_optional_but_flavors_are_not(self):
+        document = self._document()
+        document["operators"] = [
+            {key: value for key, value in item.items() if key != "label"}
+            for item in document["operators"]
+        ]
+        config, operators, _matrices = load_unified_input(document)
+        self.assertEqual(operators[0].label, "sink_pi_0")
+        self.assertEqual(operators[1].label, "source_pi_0")
+
+        invalid = self._document()
+        invalid["operators"][0] = {
+            key: value for key, value in invalid["operators"][0].items()
+            if key != "flavors"
+        }
+        with self.assertRaisesRegex(ValueError, "flavors"):
+            load_unified_input(invalid)
+
     def test_special_check_and_result_directory(self):
         config, operators, matrices = load_unified_input(self._document(output="check"))
         report = run_unified(config, operators, gamma_matrices=matrices)

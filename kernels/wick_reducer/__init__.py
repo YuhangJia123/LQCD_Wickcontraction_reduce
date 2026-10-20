@@ -7,7 +7,6 @@ from .reducer import (
 from .operator_model import make_operator, operator_library
 from .linear_combination import (
     ExactScalar, OperatorProductTerm, OperatorLinearCombination,
-    SourceLinearCombination, SinkOperator, CorrelatorCombination,
     lift_legacy_operators, reduce_linear_combination,
     make_sigma_lambda_example,
 )
@@ -22,7 +21,6 @@ __all__ = [
     "load_unified_input", "result_directory", "run_unified", "write_unified",
     "reduce_operators", "run_examples",
     "ExactScalar", "OperatorProductTerm", "OperatorLinearCombination",
-    "SourceLinearCombination", "SinkOperator", "CorrelatorCombination",
     "lift_legacy_operators", "reduce_linear_combination", "make_sigma_lambda_example",
     "contraction_expression", "normalize_correlator", "render_python_output",
     "default_block_output_path", "split_operators", "write_case_output", "write_output",

@@ -182,6 +182,205 @@ block 命令需要 NumPy。生产 block 会自动从 normal 算符构造 raw pai
 
 自定义 Gamma 放入顶层 `gamma_matrices`，例如 `{"G_custom": [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]}`，并在算符中写 `"gamma": "G_custom"`。必须提供数值 `4 x 4` 矩阵，不能使用 `"gamma1 * gamma5"` 作为计算表达式。
 
+## Python 线性组合输入
+
+需要精确系数或一个算符在乘积中出现多次时，按下面四步构造输入：
+
+```text
+原子 Operator
+    ↓
+OperatorProductTerm()
+    ↓
+OperatorLinearCombination(terms=(...))
+    ↓
+一个 sink combination + 一个 source combination
+```
+
+这里的“输入”指 Python 输入模块，不是前面的 JSON CLI 格式。第四步直接调用
+`reduce_linear_combination(sink_combination, source_combination)`：一次调用只描述一个 sink
+线性组合和一个 source 线性组合。若有两个独立 sink（例如 Lambda1p、Lambda2p），就分别构造
+sink combination、分别调用约化；它们不会在输入层相加。原子 `Operator` 的 `label` 可以省略，
+程序会保留一个内部诊断标签；`flavors` 是算符定义的一部分，必须提供。
+
+### pipi：两个相同介子因子
+
+```python
+from kernels.wick_reducer import (
+    make_operator, OperatorProductTerm, OperatorLinearCombination,
+    reduce_linear_combination,
+)
+
+# 1. 原子 Operator
+pi_sink = make_operator(
+    side="sink", kind="meson", species="pi0",
+    flavors=("u", "u"), gamma="gamma5", gamma_slots=(0, 1),
+)
+pi_source = make_operator(
+    side="source", kind="meson", species="pi0",
+    flavors=("u", "u"), gamma="gamma5", gamma_slots=(0, 1),
+)
+
+# 2. 一个有序乘积项；同一对象出现两次
+pipi_sink_term = OperatorProductTerm((pi_sink, pi_sink), "1", "pipi sink")
+pipi_source_term = OperatorProductTerm((pi_source, pi_source), "1", "pipi source")
+
+# 3. 两个组合
+pipi_sink = OperatorLinearCombination(terms=(pipi_sink_term,))
+pipi_source = OperatorLinearCombination(terms=(pipi_source_term,))
+
+# 4. 约化
+pipi_result = reduce_linear_combination(pipi_sink, pipi_source, sink_name="pipi")
+print(pipi_result["wick_count"], pipi_result["global_basis_count"])
+```
+
+### pn：一个乘积项包含两个不同 baryon
+
+```python
+p_sink = make_operator(
+    side="sink", kind="baryon", species="p",
+    flavors=("u", "u", "d"), gamma="Cgamma5",
+    gamma_slots=(1, 2), open_slot=0,
+)
+n_sink = make_operator(
+    side="sink", kind="baryon", species="n",
+    flavors=("d", "d", "u"), gamma="Cgamma5",
+    gamma_slots=(1, 2), open_slot=0,
+)
+p_source = make_operator(
+    side="source", kind="baryon", species="p",
+    flavors=("u", "d", "u"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+n_source = make_operator(
+    side="source", kind="baryon", species="n",
+    flavors=("d", "u", "d"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+
+pn_sink = OperatorLinearCombination(terms=(
+    OperatorProductTerm((p_sink, n_sink), "1", "pn sink"),
+))
+pn_source = OperatorLinearCombination(terms=(
+    OperatorProductTerm((p_source, n_source), "1", "pn source"),
+))
+pn_result = reduce_linear_combination(pn_sink, pn_source, sink_name="pn")
+```
+
+### Sigma-N source 与 Lambda-p sinks
+
+物理 source 为
+
+\[
+S=\sqrt{2/3}\,|\Sigma^0_{norm}p\rangle+
+\sqrt{1/3}\,|\Sigma^+n_{phys}\rangle.
+\]
+
+项目约定 `Sigma0_norm=Sigma0_raw/sqrt(2)`，且 `n_phys=-n_raw`。所以输入 raw 算符时，Sigma0 raw 的两个插值项系数各为 `+sqrt(1/3)`，`Sigma+_raw n_raw` 的系数为 `-sqrt(1/3)`。下面代码不再重复乘 Sigma0 的归一化因子；两个 Lambda sink 各自单独运行。
+
+```python
+from kernels.wick_reducer import (
+    make_operator, OperatorProductTerm, OperatorLinearCombination,
+    reduce_linear_combination,
+)
+
+# 1. 逐个构造原子 Operator。source 的场顺序和 Gamma dagger 显式给出。
+p_sink = make_operator(
+    side="sink", kind="baryon", species="p",
+    flavors=("u", "u", "d"), gamma="Cgamma5",
+    gamma_slots=(1, 2), open_slot=0,
+)
+lambda1_sink_operator = make_operator(
+    side="sink", kind="baryon", species="Lambda1",
+    flavors=("s", "u", "d"), gamma="Cgamma5",
+    gamma_slots=(1, 2), open_slot=0,
+)
+lambda2_dus_sink_operator = make_operator(
+    side="sink", kind="baryon", species="Lambda2_dus",
+    flavors=("d", "u", "s"), gamma="Cgamma5",
+    gamma_slots=(1, 2), open_slot=0,
+)
+lambda2_uds_sink_operator = make_operator(
+    side="sink", kind="baryon", species="Lambda2_uds",
+    flavors=("u", "d", "s"), gamma="Cgamma5",
+    gamma_slots=(1, 2), open_slot=0,
+)
+
+p_source = make_operator(
+    side="source", kind="baryon", species="pbar",
+    flavors=("u", "d", "u"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+sigma0_dus_source = make_operator(
+    side="source", kind="baryon", species="Sigma0_raw_dus",
+    flavors=("d", "s", "u"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+sigma0_uds_source = make_operator(
+    side="source", kind="baryon", species="Sigma0_raw_uds",
+    flavors=("u", "s", "d"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+sigma_plus_source = make_operator(
+    side="source", kind="baryon", species="Sigma_plus",
+    flavors=("u", "s", "u"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+n_source = make_operator(
+    side="source", kind="baryon", species="nbar",
+    flavors=("d", "u", "d"), gamma="Cgamma5_dagger",
+    gamma_slots=(1, 2), open_slot=0,
+)
+
+# 2. Sigma-N source 的三个 raw 项。Sigma0_raw 已展开成前两个项。
+sigma0_dus_p_term = OperatorProductTerm(
+    operators=(p_source, sigma0_dus_source),
+    coefficient="sqrt(1/3)",
+    source_label="Sigma0_raw: d(u^T Cgamma5 s) p",
+)
+sigma0_uds_p_term = OperatorProductTerm(
+    (p_source, sigma0_uds_source), "sqrt(1/3)",
+    "Sigma0_raw: u(d^T Cgamma5 s) p",
+)
+sigma_plus_n_term = OperatorProductTerm(
+    (n_source, sigma_plus_source), "-sqrt(1/3)",
+    "Sigma_plus n_raw (project phase -1)",
+)
+
+# 3. 一套 source combination；Lambda1p 和 Lambda2p 分别建立 sink combination。
+source = OperatorLinearCombination(terms=(
+    sigma0_dus_p_term, sigma0_uds_p_term, sigma_plus_n_term,
+))
+
+lambda1_term = OperatorProductTerm(
+    operators=(lambda1_sink_operator, p_sink),
+    coefficient="1",
+    source_label="Lambda1 p",
+)
+lambda1_sink = OperatorLinearCombination(terms=(lambda1_term,))
+
+lambda2_dus_term = OperatorProductTerm(
+    operators=(lambda2_dus_sink_operator, p_sink),
+    coefficient="1",
+    source_label="Lambda2: + d(u^T Cgamma5 s) p",
+)
+lambda2_uds_term = OperatorProductTerm(
+    (lambda2_uds_sink_operator, p_sink), "-1",
+    "Lambda2: - u(d^T Cgamma5 s) p",
+)
+lambda2_sink = OperatorLinearCombination(terms=(lambda2_dus_term, lambda2_uds_term))
+
+# 4. 每次传入一个 sink combination 和共同的 source combination。
+lambda1_result = reduce_linear_combination(lambda1_sink, source, sink_name="Lambda1p")
+lambda2_result = reduce_linear_combination(lambda2_sink, source, sink_name="Lambda2p")
+
+print(lambda1_result["wick_count"], lambda1_result["global_basis_count"],
+      lambda1_result["exactness"]["all_rows_exact_zero"])
+print(lambda2_result["wick_count"], lambda2_result["global_basis_count"],
+      lambda2_result["exactness"]["all_rows_exact_zero"])
+```
+
+在项目当前约定下，两行应分别显示 `36 18 True` 和 `72 33 True`。source 两项与每个 sink 项先做笛卡尔展开，再批量映射到本次约化的基底；原始 Wick 符号和来源标签保存在结果的 `wick_contributions`。约化器用浮点 Dirac/Gram 关系发现基底关系（固定秩容差 `1e-10`），输入根式与整数关系系数再精确汇总；`all_rows_exact_zero` 表示每个报告基底系数均精确为零，不只是小于数值阈值。
+
 ## 常见错误
 
 | 现象 | 处理 |

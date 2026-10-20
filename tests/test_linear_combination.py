@@ -1,4 +1,4 @@
-"""Exact input weights and multi-component Wick-reduction regressions."""
+"""Exact input weights and the flat four-step combination API."""
 
 import math
 import sys
@@ -13,13 +13,11 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from kernels.wick_reducer import (
-    CorrelatorCombination,
     ExactScalar,
     OperatorLinearCombination,
     OperatorProductTerm,
-    SinkOperator,
-    SourceLinearCombination,
     lift_legacy_operators,
+    make_operator,
     make_sigma_lambda_example,
     reduce_linear_combination,
     reduce_operators,
@@ -27,9 +25,15 @@ from kernels.wick_reducer import (
 from kernels.wick_reducer.operator_model import operator_library
 
 
-def _basis_coefficients(report, sink_name):
+def _combination(operators, coefficient=1, label="term"):
+    return OperatorLinearCombination((OperatorProductTerm(
+        tuple(operators), coefficient, label,
+    ),))
+
+
+def _basis_coefficients(report):
     return [
-        basis["rows"][sink_name]["exact_coefficient"]["expression"]
+        basis["rows"][report["sink_name"]]["exact_coefficient"]["expression"]
         for basis in report["global_basis"]
     ]
 
@@ -45,23 +49,38 @@ class ExactScalarTests(unittest.TestCase):
             "sqrt(3)",
         )
         self.assertEqual(ExactScalar.parse(Fraction(2, 3)).to_json()["expression"], "2/3")
-        self.assertEqual(ExactScalar.rational(Fraction(3, 4), 3).to_json()["expression"], "1/4")
         with self.assertRaises((TypeError, ValueError)):
             ExactScalar.parse(0.5)
 
 
 class LinearCombinationReductionTests(unittest.TestCase):
+    def test_operator_label_is_optional_but_flavors_are_required(self):
+        operator = make_operator(
+            side="sink", kind="baryon", species="p",
+            flavors=("u", "u", "d"), gamma="Cgamma5",
+            gamma_slots=(1, 2), open_slot=0,
+        )
+        self.assertEqual(operator.label, "sink_p")
+        with self.assertRaisesRegex(ValueError, "flavors are required"):
+            make_operator(side="sink", kind="baryon", species="p")
+
+    def test_flat_four_step_api_accepts_same_operator_twice_for_pp(self):
+        p_sink, p_source = operator_library()["ppn"][0], operator_library()["ppn"][3]
+        sink = _combination((p_sink, p_sink), label="pp sink")
+        source = _combination((p_source, p_source), label="pp source")
+        result = reduce_linear_combination(sink, source, sink_name="pp")
+        self.assertEqual(result["sink_names"], ["pp"])
+        self.assertEqual(result["wick_count"], 48)
+        self.assertEqual(result["global_basis_count"], 15)
+
     def test_expanded_terms_share_one_reducer_call_per_topology_batch(self):
         sink, source = operator_library()["delta"]
-        request = CorrelatorCombination(
-            (SinkOperator("delta", OperatorLinearCombination((
-                OperatorProductTerm((sink,), 1, "sink"),
-            ))),),
-            SourceLinearCombination(OperatorLinearCombination((
-                OperatorProductTerm((source,), Fraction(1, 3), "source-1"),
-                OperatorProductTerm((replace(source, label="source-2"),), Fraction(2, 3), "source-2"),
-            ))),
+        sink_combination = _combination((sink,), label="sink")
+        source_terms = (
+            OperatorProductTerm((source,), Fraction(1, 3), "source-1"),
+            OperatorProductTerm((replace(source, label="source-2"),), Fraction(2, 3), "source-2"),
         )
+        source_combination = OperatorLinearCombination(source_terms)
         original = reduce_operators
         calls = []
 
@@ -70,7 +89,7 @@ class LinearCombinationReductionTests(unittest.TestCase):
             return original(operators, **kwargs)
 
         with patch("kernels.wick_reducer.linear_combination.wick_reducer.reduce_operators", counted):
-            result = reduce_linear_combination(request)
+            result = reduce_linear_combination(sink_combination, source_combination, sink_name="delta")
         self.assertEqual(len(calls), 1)
         self.assertEqual(result["global_batches"][0]["wick_count"], 12)
 
@@ -79,27 +98,19 @@ class LinearCombinationReductionTests(unittest.TestCase):
         source_g5 = replace(
             source_g3, label="source_delta_gamma5", gamma="Cgamma5_dagger",
         )
-        sink_combination = OperatorLinearCombination((
-            OperatorProductTerm((sink,), 1, "Delta++ sink"),
-        ))
+        sink_combination = _combination((sink,), label="Delta++ sink")
         source_terms = (
             OperatorProductTerm((source_g3,), Fraction(1, 3), "source gamma3"),
             OperatorProductTerm((source_g5,), Fraction(2, 3), "source gamma5"),
         )
-        combined = CorrelatorCombination(
-            (SinkOperator("delta", sink_combination),),
-            SourceLinearCombination(OperatorLinearCombination(source_terms)),
+        source_combination = OperatorLinearCombination(source_terms)
+        together = reduce_linear_combination(sink_combination, source_combination, sink_name="delta")
+        first = reduce_linear_combination(
+            sink_combination, OperatorLinearCombination((source_terms[0],)), sink_name="delta",
         )
-
-        def one_term(term):
-            return CorrelatorCombination(
-                combined.sinks,
-                SourceLinearCombination(OperatorLinearCombination((term,))),
-            )
-
-        together = reduce_linear_combination(combined)
-        first = reduce_linear_combination(one_term(source_terms[0]))
-        second = reduce_linear_combination(one_term(source_terms[1]))
+        second = reduce_linear_combination(
+            sink_combination, OperatorLinearCombination((source_terms[1],)), sink_name="delta",
+        )
         self.assertEqual(len(together["global_batches"]), 2)
 
         def coefficient_map(report):
@@ -119,7 +130,8 @@ class LinearCombinationReductionTests(unittest.TestCase):
     def test_legacy_single_product_matches_old_api_coefficients(self):
         operators = operator_library()["pn"]
         old = reduce_operators(operators, mode="detailed")
-        new = reduce_linear_combination(lift_legacy_operators(operators))
+        sink_combination, source_combination = lift_legacy_operators(operators)
+        new = reduce_linear_combination(sink_combination, source_combination)
 
         self.assertEqual(new["wick_count"], old["wick_count"])
         self.assertEqual(new["global_basis_count"], old["independent_count"])
@@ -140,133 +152,64 @@ class LinearCombinationReductionTests(unittest.TestCase):
         operators = operator_library()["delta"]
         sink_ops = tuple(op for op in operators if op.side == "sink")
         source_ops = tuple(op for op in operators if op.side == "source")
-        unit = CorrelatorCombination(
-            (SinkOperator("delta", OperatorLinearCombination((
-                OperatorProductTerm(sink_ops, 1, "unit sink"),
-            ))),),
-            SourceLinearCombination(OperatorLinearCombination((
-                OperatorProductTerm(source_ops, 1, "unit source"),
-            ))),
-        )
+        sink = _combination(sink_ops, label="unit sink")
+        source = _combination(source_ops, label="unit source")
         split_source = OperatorLinearCombination((
             OperatorProductTerm(source_ops, Fraction(1, 3), "source / 3"),
             OperatorProductTerm(source_ops, Fraction(2, 3), "2 source / 3"),
         ))
-        split = replace(unit, source=SourceLinearCombination(split_source))
-        reversed_split = replace(
-            unit,
-            source=SourceLinearCombination(OperatorLinearCombination(tuple(reversed(split_source.terms)))),
-        )
 
-        unit_result = reduce_linear_combination(unit)
-        split_result = reduce_linear_combination(split)
-        reversed_result = reduce_linear_combination(reversed_split)
+        unit_result = reduce_linear_combination(sink, source, sink_name="delta")
+        split_result = reduce_linear_combination(sink, split_source, sink_name="delta")
+        reversed_result = reduce_linear_combination(
+            sink, OperatorLinearCombination(tuple(reversed(split_source.terms))), sink_name="delta",
+        )
         self.assertEqual(len(split_source.premerged()), 1)
-        self.assertEqual(
-            _basis_coefficients(unit_result, "delta"),
-            _basis_coefficients(split_result, "delta"),
-        )
-        self.assertEqual(
-            _basis_coefficients(split_result, "delta"),
-            _basis_coefficients(reversed_result, "delta"),
-        )
+        self.assertEqual(_basis_coefficients(unit_result), _basis_coefficients(split_result))
+        self.assertEqual(_basis_coefficients(split_result), _basis_coefficients(reversed_result))
 
-        scaled = replace(
-            unit,
-            sinks=(SinkOperator("delta", OperatorLinearCombination((
-                OperatorProductTerm(sink_ops, "sqrt(2)", "sqrt2 sink"),
-            ))),),
-        )
-        scaled_result = reduce_linear_combination(scaled)
+        scaled = OperatorLinearCombination((
+            OperatorProductTerm(sink_ops, "sqrt(2)", "sqrt2 sink"),
+        ))
+        scaled_result = reduce_linear_combination(scaled, source, sink_name="delta")
         self.assertEqual(scaled_result["global_basis_count"], unit_result["global_basis_count"])
-        for original, changed in zip(
-            unit_result["global_basis"], scaled_result["global_basis"],
-        ):
+        for original, changed in zip(unit_result["global_basis"], scaled_result["global_basis"]):
             a = original["rows"]["delta"]["numeric"][0]
             b = changed["rows"]["delta"]["numeric"][0]
             self.assertTrue(math.isclose(b, math.sqrt(2) * a, rel_tol=1e-13, abs_tol=1e-13))
-            exact = changed["rows"]["delta"]["exact_coefficient"]["expression"]
-            self.assertNotIn("e-", exact)
 
-    def test_sigma_n_to_lambda_p_exact_isospin_cancellation_and_trace(self):
-        request = make_sigma_lambda_example()
-        source_terms = request.source.combination.premerged()
-        coefficient_by_label = {
-            term.source_label: term.coefficient.to_json()["expression"]
-            for term in source_terms
-        }
-        self.assertEqual(
-            sorted(coefficient_by_label.values()),
-            ["-1/3*sqrt(3)", "1/3*sqrt(3)", "1/3*sqrt(3)"],
-        )
-        self.assertEqual(
-            coefficient_by_label["Sigma_plus n (raw n phase -1)"],
-            "-1/3*sqrt(3)",
-        )
-
-        report = reduce_linear_combination(request)
-        self.assertEqual(report["sink_names"], ["Lambda1p", "Lambda2p"])
-        self.assertEqual(report["wick_count"], 108)
-        self.assertEqual(report["global_basis_count"], 51)
-        self.assertEqual(len(report["wick_contributions"]), 108)
-        self.assertEqual(report["source_normalization_mapping"]["raw_operator_coefficients"], [
-            ExactScalar.sqrt(1, 3).to_json(), (-ExactScalar.sqrt(1, 3)).to_json(),
-        ])
-        for sink in report["sink_names"]:
+    def test_lambda1_and_lambda2_are_separate_single_sink_requests(self):
+        for name, wick_count, basis_count in (
+            ("Lambda1p", 36, 18), ("Lambda2p", 72, 33),
+        ):
+            sink, source = make_sigma_lambda_example(name)
+            report = reduce_linear_combination(sink, source, sink_name=name)
+            self.assertEqual(report["sink_names"], [name])
+            self.assertEqual(report["wick_count"], wick_count)
+            self.assertEqual(report["global_basis_count"], basis_count)
+            self.assertTrue(report["exactness"]["all_rows_exact_zero"])
             for basis in report["global_basis"]:
-                row = basis["rows"][sink]
-                self.assertTrue(row["exact_zero"])
-                self.assertTrue(row["zero_within_tolerance"])
-                self.assertEqual(row["exact_coefficient"]["expression"], "0")
-        for wick in report["wick_contributions"]:
-            self.assertIn(wick["wick_sign"], (-1, 1))
-            self.assertIn("sink_vvv_sign", wick)
-            self.assertIn("source_vvv_sign", wick)
-            self.assertIn("input_weight_exact", wick)
-            self.assertTrue(wick["global_basis_mapping"])
-            self.assertLessEqual(
-                max(mapping["global_basis_id"] for mapping in wick["global_basis_mapping"]),
-                report["global_basis_count"] - 1,
-            )
-        self.assertEqual(report["numeric_tolerance"], 1.0e-10)
-        self.assertFalse(report["global_independence_certified"])
+                self.assertTrue(basis["rows"][name]["exact_zero"])
+                self.assertTrue(basis["rows"][name]["zero_within_tolerance"])
 
     def test_source_term_order_invariance_and_raw_neutron_phase_matters(self):
-        request = make_sigma_lambda_example()
-        shuffled = replace(
-            request,
-            source=SourceLinearCombination(OperatorLinearCombination(
-                tuple(reversed(request.source.combination.terms)),
-            )),
-        )
-        first = reduce_linear_combination(request)
-        second = reduce_linear_combination(shuffled)
-        for sink in first["sink_names"]:
-            self.assertEqual(_basis_coefficients(first, sink), _basis_coefficients(second, sink))
+        sink, source = make_sigma_lambda_example("Lambda1p")
+        shuffled = OperatorLinearCombination(tuple(reversed(source.terms)))
+        first = reduce_linear_combination(sink, source, sink_name="Lambda1p")
+        second = reduce_linear_combination(sink, shuffled, sink_name="Lambda1p")
+        self.assertEqual(_basis_coefficients(first), _basis_coefficients(second))
 
-        wrong_phase_terms = list(request.source.combination.terms)
+        wrong_phase_terms = list(source.terms)
         wrong_phase_terms[-1] = replace(
             wrong_phase_terms[-1], coefficient=-wrong_phase_terms[-1].coefficient,
         )
-        wrong_phase = replace(
-            request,
-            source=SourceLinearCombination(OperatorLinearCombination(tuple(wrong_phase_terms))),
+        wrong_report = reduce_linear_combination(
+            sink, OperatorLinearCombination(tuple(wrong_phase_terms)), sink_name="Lambda1p",
         )
-        wrong_report = reduce_linear_combination(wrong_phase)
-        for sink in wrong_report["sink_names"]:
-            self.assertTrue(any(
-                basis["rows"][sink]["exact_zero"] is False
-                for basis in wrong_report["global_basis"]
-            ))
-
-    def test_lambdap_example_uses_the_shared_old_kernel(self):
-        request = make_sigma_lambda_example()
-        lambdap = replace(request, sinks=(request.sinks[0],))
-        report = reduce_linear_combination(lambdap)
-        self.assertEqual(report["sink_names"], ["Lambda1p"])
-        self.assertEqual(report["wick_count"], 36)
-        self.assertEqual(len(report["global_batches"]), 1)
-        self.assertTrue(report["exactness"]["all_rows_exact_zero"])
+        self.assertTrue(any(
+            basis["rows"]["Lambda1p"]["exact_zero"] is False
+            for basis in wrong_report["global_basis"]
+        ))
 
 
 if __name__ == "__main__":

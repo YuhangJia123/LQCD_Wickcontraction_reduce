@@ -18,8 +18,8 @@ def make_operator(
     side: str,
     kind: str,
     species: str,
-    label: str,
-    flavors: Sequence[str],
+    label: Optional[str] = None,
+    flavors: Sequence[str] = (),
     gamma: str = "",
     gamma_slots: Optional[Sequence[int]] = None,
     open_slot: object = _DEFAULT_OPEN_SLOT,
@@ -39,6 +39,16 @@ def make_operator(
         raise ValueError("side must be 'sink' or 'source'")
     if kind not in ("baryon", "meson"):
         raise ValueError("kind must be 'baryon' or 'meson'")
+
+    if not flavors:
+        raise ValueError("flavors are required")
+    if label is None:
+        # Keep the historical diagnostic field internally while allowing the
+        # public constructor to hide it. Repeated factors such as (p, p) are
+        # distinguished by their positions in OperatorProductTerm.
+        label = f"{side}_{species}"
+    elif not isinstance(label, str):
+        raise TypeError("label must be a string when provided")
 
     flavors = tuple(flavors)
     if kind == "baryon" and len(flavors) != 3:
