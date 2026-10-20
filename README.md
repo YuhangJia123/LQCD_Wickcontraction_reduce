@@ -68,6 +68,33 @@ operators = [sink 算符列表, source 算符列表]
 
 标签不会自动增加坐标轴、执行 Fourier 变换或空间求和。统一 JSON 没有独立的 `p`/`x` 输入键，使用 `momentum` 与 `external_tag` 表达这些信息。`projector`、`clebsch`、`phase` 等元数据在不同路径中的处理不应混为一谈，也不表示程序会自动构造相应数值张量或展开物理态叠加。
 
+## 精确算符线性组合
+
+`kernels.wick_reducer` 提供 `reduce_linear_combination`，用于带精确系数的 source 态和多个独立 sink channel。一个乘积项由 `OperatorProductTerm` 表示，包含有序算符、精确系数和来源标签；`OperatorLinearCombination` 表示同一侧的项，`SourceLinearCombination` 表示 source，`SinkOperator` 表示一个单独计算的 sink。旧的 `reduce_operators()` 输入保持不变，也可以用 `lift_legacy_operators()` 转成系数为 1 的单项组合。
+
+线性组合先展开每个 sink/source 乘积并枚举其味道允许的 Wick 配对，再按兼容的算符拓扑把展开项组成批次。每个批次只调用一次原有 Wick reducer，因此批内的 basis、transporter families 和 Dirac/peram 缓存会保留到下一项，批次完成后才输出结果。不同拓扑批次不会直接拼接局部 basis ID；结果中的编号只在本次输出中有效。
+
+```python
+from kernels.wick_reducer import (
+    OperatorProductTerm, OperatorLinearCombination,
+    SourceLinearCombination, SinkOperator, CorrelatorCombination,
+    reduce_linear_combination,
+)
+
+request = CorrelatorCombination(
+    sinks=(SinkOperator("sink-A", OperatorLinearCombination((
+        OperatorProductTerm((sink_operator,), 1, "sink term A"),
+    ))),),
+    source=SourceLinearCombination(OperatorLinearCombination((
+        OperatorProductTerm((source_term_1,), "sqrt(1/3)", "source term 1"),
+        OperatorProductTerm((source_term_2,), "sqrt(1/3)", "source term 2"),
+    ))),
+)
+result = reduce_linear_combination(request)
+```
+
+source 通过伴随进入关联函数时，输入系数按现有约定取复共轭；当前 `ExactScalar` 支持有理数和平方根的精确实数表达式。运行 `python -m unittest tests.test_linear_combination` 可检查精确系数、分配律、项重排、预合并、旧 API 兼容和 Lambda-p 验证例。
+
 ## 环境与安装
 
 推荐 Python 3.11；包配置声明 Python >= 3.9，本次验证使用 Python 3.11。项目可在根目录直接运行，符号 Wick/special 路径使用标准库。normal block 生成需要 NumPy；实际执行 Python 收缩文件和数值验证需要 NumPy 与 opt_einsum。
